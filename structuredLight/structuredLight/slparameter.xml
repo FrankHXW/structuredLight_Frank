@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<output>
+  <output_directory>"./output"</output_directory>
+  <object_name>"test"</object_name>
+  <save_enable>0</save_enable>
+</output>
+
+<camera>
+  <id>0</id>
+  <width>1024</width>
+  <height>768</height>
+</camera>
+
+<projector>
+  <width>1024</width>
+  <height>768</height>
+  <invert>0</invert>
+</projector>
+
+<gain_parameters>
+<camera_gain>100</camera_gain>
+<projector_gain>100</projector_gain>
+</gain_parameters>
+
+<camera_calibration_parameters>
+<board_size_width>6</board_size_width>
+<board_size_height>8</board_size_height>
+<square_size_width>10</square_size_width>
+<square_size_height>10</square_size_height>
+<frame_amount>10</frame_amount>
+</camera_calibration_parameters>
+
+<projector_calibration_parameters>
+<board_size_width>6</board_size_width>
+<board_size_height>8</board_size_height>
+<square_size_width>50</square_size_width>
+<square_size_height>50</square_size_height>
+</projector_calibration_parameters>
+
+<scan_colums_flag>1</scan_colums_flag>
+<scan_rows_flag>0</scan_rows_flag>
+<project_capture_delay>200</project_capture_delay>
+<contrast_threshold>30</contrast_threshold>
+<distance_range_min>300</distance_range_min>
+<distance_range_max>500</distance_range_max>
+<distance_reject>700</distance_reject>
+<background_depth_threshold>20</background_depth_threshold>
+
+</opencv_storage>
