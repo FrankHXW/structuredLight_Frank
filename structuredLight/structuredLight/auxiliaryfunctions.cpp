@@ -51,7 +51,6 @@ int GetImage(Mat &frame_grab)
 	}
 	else
 		return 0;
-
 }
 
 //Initialize camera

@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "structuredLight", "structuredLight\structuredLight.vcxproj", "{66271DB1-EAE0-4330-B333-EC828182A297}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "structuredlight", "structuredLight\structuredLight.vcxproj", "{66271DB1-EAE0-4330-B333-EC828182A297}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "referenceProject", "referenceProject\referenceProject.vcxproj", "{D9628F4B-934A-4F39-A03B-47AF472FE91D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{66271DB1-EAE0-4330-B333-EC828182A297}.Debug|Win32.Build.0 = Debug|Win32
 		{66271DB1-EAE0-4330-B333-EC828182A297}.Release|Win32.ActiveCfg = Release|Win32
 		{66271DB1-EAE0-4330-B333-EC828182A297}.Release|Win32.Build.0 = Release|Win32
+		{D9628F4B-934A-4F39-A03B-47AF472FE91D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D9628F4B-934A-4F39-A03B-47AF472FE91D}.Debug|Win32.Build.0 = Debug|Win32
+		{D9628F4B-934A-4F39-A03B-47AF472FE91D}.Release|Win32.ActiveCfg = Release|Win32
+		{D9628F4B-934A-4F39-A03B-47AF472FE91D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

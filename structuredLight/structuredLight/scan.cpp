@@ -9,7 +9,9 @@
 
 #include "structuredlight.h"
 #include "auxiliaryfunctions.h"
+#include "phaseshift.h"
 #include "scan.h"
+
 using namespace std;
 using namespace cv;
 
@@ -113,6 +115,8 @@ int SaveX3DFile(char *filename, Mat &points, Mat &colors, Mat &mask)
 	fprintf(pFile, "</Scene>\n");
 	fprintf(pFile, "</X3D>\n");
 	fclose(pFile);
+
+	return 0;
 }
 
 
@@ -736,3 +740,9 @@ int RunStructuredLight(SlParameter &sl_parameter, SlCalibration &sl_calibration)
 
 	return 0;
 }
+
+
+
+
+
+

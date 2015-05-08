@@ -2,12 +2,10 @@
 //Author: Frank
 //Date:   3/9/2015
 
-#define DEBUG_PROJECT
-//#undef  DEBUG_PROJECT
-
+//#define DEBUG_PROJECT
+#undef  DEBUG_PROJECT
 
 #define _CRT_SECURE_NO_WARNINGS
-
 
 using namespace std;
 using namespace cv;

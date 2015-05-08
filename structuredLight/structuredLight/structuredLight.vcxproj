@@ -88,11 +88,13 @@
     <ClCompile Include="camera_calibration.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="phaseshift.cpp" />
     <ClCompile Include="scan.cpp" />
-    <ClCompile Include="structuredlight.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="calibration.h" />
+    <ClInclude Include="phaseshift.h" />
     <ClInclude Include="scan.h" />
     <ClInclude Include="structuredlight.h" />
     <ClInclude Include="auxiliaryfunctions.h" />
