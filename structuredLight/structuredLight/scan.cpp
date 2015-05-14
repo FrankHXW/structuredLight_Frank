@@ -12,10 +12,12 @@
 #include "phaseshift.h"
 #include "scan.h"
 
+#define _CRT_SECURE_NO_WARNINGS
+
 using namespace std;
 using namespace cv;
 
-//colorize image like matlab
+//colorize image like matlab,input must range from 0 to 255
 void ColorizeWinter(Mat &src, Mat &dst, Mat &mask)
 {
 	//src is 1-channel,dst is 3-channel 
@@ -102,8 +104,8 @@ int SaveX3DFile(char *filename, Mat &points, Mat &colors, Mat &mask)
 		{
 		if (mask.at<unsigned char>(r, c) != 0)
 		{
-//			fprintf(pFile, "%f %f %f,\n", colors.at<Vec3d>(r, c)[0], colors.at<Vec3d>(r, c)[1], colors.at<Vec3d>(r, c)[2]);
-			fprintf(pFile, "%f %f %f", 0.5, 0.0, 0.5);
+			fprintf(pFile, "%f %f %f,\n", colors.at<Vec3d>(r, c)[0], colors.at<Vec3d>(r, c)[1], colors.at<Vec3d>(r, c)[2]);
+//			fprintf(pFile, "%f %f %f", 0.5, 0.0, 0.5);
 		}
 		}
 	fprintf(pFile, "%f %f %f", colors.at<Vec3d>(colors.rows - 1, colors.cols - 1)[0], colors.at<Vec3d>(colors.rows - 1, colors.cols - 1)[1], colors.at<Vec3d>(colors.rows - 1, colors.cols - 1)[2]);
@@ -118,7 +120,6 @@ int SaveX3DFile(char *filename, Mat &points, Mat &colors, Mat &mask)
 
 	return 0;
 }
-
 
 
 int GenerateGrayCode(SlParameter &sl_parameter)
@@ -544,10 +545,16 @@ int DecodeGrayCode(SlParameter &sl_parameter)
 		temp.copyTo(sl_parameter.decode_row_scan_image);
 		cout << "decode graycode row scan image successful!" << endl;
 	}
+
+	//choose which image as scene scene image
+	sl_parameter.scene_color.create(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC3);
+	sl_parameter.scene_color.setTo(0);
+	Mat temp1(sl_parameter.camera_height, sl_parameter.camera_width, CV_16UC3, Scalar(0));
+	temp1= (sl_parameter.camera_gray_code_image[0] + sl_parameter.camera_gray_code_image[1])/2;
+	sl_parameter.scene_color = temp1;
 	cout << endl;
 	return 0;
 }
-
 
 
 int DisplayDecodeResult(SlParameter &sl_parameter)
@@ -598,6 +605,7 @@ int DisplayDecodeResult(SlParameter &sl_parameter)
 	return 0; 
 }
 
+
 int ReconstructDepthMap(SlParameter &sl_parameter, SlCalibration &sl_calibration)
 {
 	sl_parameter.depth_valid.create(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC1);
@@ -631,6 +639,8 @@ int ReconstructDepthMap(SlParameter &sl_parameter, SlCalibration &sl_calibration
 					//read current pixel's projector colum value and corresponding colum plane
 					int corresponding_colum = 0;
 					corresponding_colum = sl_parameter.decode_colum_scan_image.at<unsigned short>(r, c);
+					if (corresponding_colum>sl_parameter.projector_width - 1)	//pay attention to this
+						corresponding_colum = sl_parameter.projector_width - 1;
 					for (int i = 0; i < 4; ++i)
 					{
 						w[i] = sl_calibration.projector_colum_planes.at<double>(i, corresponding_colum);
@@ -650,6 +660,8 @@ int ReconstructDepthMap(SlParameter &sl_parameter, SlCalibration &sl_calibration
 					//read current pixel's projector row value and corresponding  row plane
 					int corresponding_row = 0;
 					corresponding_row = sl_parameter.decode_row_scan_image.at<unsigned short>(r, c);
+					if (corresponding_row>sl_parameter.projector_height - 1)	//pay attention to this
+						corresponding_row = sl_parameter.projector_height - 1;
 					for (int i = 0; i < 4; ++i)
 					{
 						w[i] = sl_calibration.projector_row_planes.at<double>(i, corresponding_row);
@@ -687,7 +699,7 @@ int ReconstructDepthMap(SlParameter &sl_parameter, SlCalibration &sl_calibration
 
 				//extract color information from full write image,note: opencv's default color order is BGR differs from RGB order we desired 
 				for (int i = 0; i < 3; ++i)
-					sl_parameter.depth_colors.at<Vec3d>(r, c)[i] = (double)sl_parameter.camera_gray_code_image[1].at<Vec3b>(r, c)[2-i]/255.0f;
+					sl_parameter.depth_colors.at<Vec3d>(r, c)[i] = (double)sl_parameter.scene_color.at<Vec3b>(r, c)[2-i]/255.0f;
 				//update valid depth pixel
 				sl_parameter.depth_valid.at<unsigned char>(r, c) = 1;
 
@@ -703,14 +715,11 @@ int ReconstructDepthMap(SlParameter &sl_parameter, SlCalibration &sl_calibration
 						sl_parameter.depth_colors.at<Vec3d>(r, c)[i] =0.0f;
 					}
 				}
-
 				//reject background depth points by using z-z0>background_depth_threshold
 			}
 		}
-	
 	return 0;
 }
-
 
 
 int RunStructuredLight(SlParameter &sl_parameter, SlCalibration &sl_calibration)

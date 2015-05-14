@@ -68,6 +68,7 @@ class  SlParameter
 		Mat depth_valid;		 //1*M*N, valid depth pixel
 		Mat depth_namate;	     //1*M*N,decribe each point in parametric form 
 		Mat depth_points;		 //1*3*(M*N),points' 3D coordinate under camera coordinate
+		Mat scene_color;		 //1*3*(M*N),BGR image used to covert to depth_colors 
 		Mat depth_colors;	     //1*3*(M*N),points' color in RGB order which is different from opencv's BGR order
 		
 		Mat background_depth_namate;	 //1*M*N,decribe each point in parametric form 

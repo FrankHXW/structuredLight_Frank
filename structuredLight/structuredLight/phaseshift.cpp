@@ -1,9 +1,11 @@
 #include <iostream>
 #include <string>
 #include <direct.h>
-
+#include <deque>
+#include <queue>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <time.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -15,13 +17,6 @@
 
 using namespace std;
 using namespace cv;
-
-template<typename T>
-T max(T a, T b, T c){ return a > b ? (a > c ? a : c) : (b > c ? b : c); }
-
-template<typename T>
-T min(T a, T b, T c){ return a < b ? (a < c ? a : c) : (b < c ? b : c); }
-
 
 PhaseShift::PhaseShift(PhaseShiftMode m1, PhaseShiftScanMode m2) : phaseshift_mode(m1), phaseshift_scan_mode(m2)
 {
@@ -87,10 +82,12 @@ void PhaseShift::Init()
 
 	//Read scan options
 	project_capture_delay = configuration_file["project_capture_delay"];
+	three_pixel_range_threeshold = configuration_file["three_pixel_range_threeshold"];
 	int temp = configuration_file["three_noise_threshold"];
 	three_noise_threshold=temp/100.0f;
 #ifdef DEBUG_PROJECT
 	cout << "project_capture_delay: " << project_capture_delay << endl;
+	cout<<"three_pixel_range_threeshold: "<<three_pixel_range_threeshold<<endl;
 	cout<<"three_noise_threshold:"<<three_noise_threshold<<endl;
 #endif
 
@@ -115,12 +112,15 @@ void PhaseShift::Init()
 	default:
 		break;
 	}
-	three_wrapped_atan = Mat(image_height, image_width, CV_8UC1, Scalar(0));
-	three_wrapped_fast = Mat(image_height, image_width, CV_8UC1, Scalar(0));
-	three_unwrapped_atan = Mat(image_height, image_width, CV_8UC1, Scalar(0));
-	three_unwrapped_fast = Mat(image_height, image_width, CV_8UC1, Scalar(0));
 	three_phase_mask = Mat(image_height, image_width, CV_8UC1, Scalar(0));
-	three_color_image = Mat(image_height, image_width, CV_8UC3, Scalar(0));
+	three_unwrap_process = Mat(image_height, image_width, CV_8UC1, Scalar(0));
+	three_phase_color = Mat(image_height, image_width, CV_8UC3, Scalar(0));
+	three_phase_range = Mat(image_height, image_width, CV_64FC1, Scalar(0));
+	three_wrapped_atan = Mat(image_height, image_width, CV_64FC1, Scalar(0));
+	three_wrapped_fast = Mat(image_height, image_width, CV_64FC1, Scalar(0));
+	three_phase_quality = Mat(image_height, image_width, CV_64FC1, Scalar(0));
+	three_unwrapped_quality = Mat(image_height, image_width, CV_64FC1, Scalar(0));
+	three_unwrapped_result = Mat(image_height, image_width, CV_16UC1, Scalar(0));
 }
 
 int PhaseShift::GeneratePhaseShiftPattern()
@@ -150,7 +150,6 @@ int PhaseShift::GeneratePhaseShiftPattern()
 					}
 				}
 			}
-
 			save_name = "";
 			save_name = save_directory + "/v_three_phase1.jpg";
 			imwrite(save_name, three_pattern_phase1);
@@ -216,7 +215,6 @@ int PhaseShift::GeneratePhaseShiftPattern()
 					}
 				}
 			}
-
 			save_name = "";
 			save_name = save_directory + "/v_rgb.jpg";
 			imwrite(save_name, rgb_pattern);
@@ -240,7 +238,6 @@ int PhaseShift::GeneratePhaseShiftPattern()
 					}
 				}
 			}
-
 			save_name = "";
 			save_name = save_directory + "/h_rgb.jpg";
 			imwrite(save_name, rgb_pattern);
@@ -366,7 +363,7 @@ int PhaseShift::ScanObject(bool save_enable)
 				//waitKey(project_capture_delay);
 				//GetImage(image_grab);
 				three_image1 = image_grab*(image_gain / 100.0f);
-				cvtColor(three_image1, three_image_gray1, COLOR_RGB2GRAY);
+				cvtColor(three_image1, three_image_gray1, COLOR_BGR2GRAY);
 				imshow("scan object", three_image1);
 				if (save_enable){
 					save_name = "";
@@ -627,39 +624,334 @@ int PhaseShift::ReadScanImage()
 
 int PhaseShift::ComputeMaskRegion()
 {
-	int row_index = 0, colum_index = 0;
 	if (phaseshift_mode == PHASESHIFT_THREE){
-		unsigned phase1_value = 0, phase2_value = 0, phase3_value = 0;
-		unsigned phase_min = 0, phase_max = 0, phase_range = 0, phase_sum = 0;
-		double signal_noise_ratio = 0.0f;
+		unsigned char phase1_value = 0, phase2_value = 0, phase3_value = 0, phase_min = 0, phase_max = 0;
+		double phase_range = 0.0f, phase_sum = 0.0f,signal_noise_ratio = 0.0f;
 
-		for (row_index = 0; row_index < image_height; ++row_index){
-			for (colum_index = 0; colum_index < image_width; ++colum_index){
-				phase1_value = three_image_gray1.at<unsigned char>(row_index, colum_index);
-				phase2_value = three_image_gray2.at<unsigned char>(row_index, colum_index);
-				phase3_value = three_image_gray3.at<unsigned char>(row_index, colum_index);
-				phase_min = min(phase1_value, phase2_value, phase3_value);
-				phase_max = max(phase1_value, phase2_value, phase3_value);
+		////use .at<> to call each element : 764ms
+		//int row_index = 0, colum_index = 0;
+		//for (row_index = 0; row_index < image_height; ++row_index){
+		//	for (colum_index = 0; colum_index < image_width; ++colum_index){
+		//		phase1_value = three_image_gray1.at<unsigned char>(row_index, colum_index);
+		//		phase2_value = three_image_gray2.at<unsigned char>(row_index, colum_index);
+		//		phase3_value = three_image_gray3.at<unsigned char>(row_index, colum_index);
+		//		phase_min = Min(phase1_value, phase2_value, phase3_value);
+		//		phase_max = Max(phase1_value, phase2_value, phase3_value);
+		//		phase_range = phase_max - phase_min;
+		//		phase_sum = phase1_value + phase2_value + phase3_value;
+		//		
+		//		if (phase_sum != 0){
+		//			signal_noise_ratio = (double)phase_range / phase_sum;
+		//			if (signal_noise_ratio> three_noise_threshold){
+		//				three_phase_mask.at<unsigned char>(row_index, colum_index) = 255;
+		//				if (phase_max == phase1_value){
+		//					for (int i = 0; i < 3;++i)
+		//						three_color_image.at<Vec3b>(row_index, colum_index)[i] = three_image1.at<Vec3b>(row_index, colum_index)[i];
+		//				}
+		//				else if (phase_max == phase2_value){
+		//					for (int i = 0; i < 3; ++i)
+		//						three_color_image.at<Vec3b>(row_index, colum_index)[i] = three_image2.at<Vec3b>(row_index, colum_index)[i];
+		//				}
+		//				else{
+		//					for (int i = 0; i < 3;++i)
+		//						three_color_image.at<Vec3b>(row_index, colum_index)[i] = three_image3.at<Vec3b>(row_index, colum_index)[i];
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+		//use .ptr to call each element : 63ms
+		if (three_image_gray1.isContinuous() && three_image_gray2.isContinuous() && three_image_gray3.isContinuous()){
+			Size size = three_image_gray1.size();
+			size.width *= size.height;
+			size.height = 1;
+			//these are gray images
+			const unsigned char *ptr_phase1 = three_image_gray1.ptr<unsigned char>(0);
+			const unsigned char *ptr_phase2 = three_image_gray2.ptr<unsigned char>(0);
+			const unsigned char *ptr_phase3 = three_image_gray3.ptr<unsigned char>(0);
+			unsigned char *ptr_mask = three_phase_mask.ptr<unsigned char>(0);
+			unsigned char *ptr_process = three_unwrap_process.ptr<unsigned char>(0);
+			double *ptr_range = three_phase_range.ptr<double>(0);
+			//these are color images
+			const unsigned char *ptr_image1 = three_image1.ptr<unsigned char>(0);
+			const unsigned char *ptr_image2 = three_image2.ptr<unsigned char>(0);
+			const unsigned char *ptr_image3 = three_image3.ptr<unsigned char>(0);
+			unsigned char *ptr_color = three_phase_color.ptr<unsigned char>(0);
+			for (int i = 0; i < size.width; ++i){
+				phase1_value = ptr_phase1[i];		//read operation cost 15ms
+				phase2_value = ptr_phase2[i];
+				phase3_value = ptr_phase3[i];
+				phase_min = Min(phase1_value, phase2_value, phase3_value);  //max,min cost 45ms
+				phase_max = Max(phase1_value, phase2_value, phase3_value);
 				phase_range = phase_max - phase_min;
 				phase_sum = phase1_value + phase2_value + phase3_value;
-				
+							
 				if (phase_sum != 0){
-					signal_noise_ratio = (double)phase_range / phase_sum;
-					if (signal_noise_ratio > three_noise_threshold){
-						three_phase_mask.at<unsigned char>(row_index, colum_index) = 255;
-						if (phase_max == phase1_value){
-							for (int i = 0; i < 3;++i)
-								three_color_image.at<Vec3b>(row_index, colum_index)[i] = three_image1.at<Vec3b>(row_index, colum_index)[i];
-						}
-						else if (phase_max == phase2_value){
-							for (int i = 0; i < 3; ++i)
-								three_color_image.at<Vec3b>(row_index, colum_index)[i] = three_image2.at<Vec3b>(row_index, colum_index)[i];
-						}
-						else{
-							for (int i = 0; i < 3;++i)
-								three_color_image.at<Vec3b>(row_index, colum_index)[i] = three_image3.at<Vec3b>(row_index, colum_index)[i];
-						}
+					signal_noise_ratio = phase_range / phase_sum;
+					if ((phase_range>three_pixel_range_threeshold)&&(signal_noise_ratio > three_noise_threshold)){
+						ptr_mask[i] = 255;
+						ptr_process[i] = 255;
+						ptr_range[i] = phase_range;
+						unsigned int temp = ptr_image1[i * 3] + ptr_image2[i * 3] + ptr_image3[i * 3];
+						ptr_color[i * 3] = temp / 3;
+						temp = ptr_image1[i * 3 + 1] + ptr_image2[i * 3 + 1] + ptr_image3[i * 3 + 2];
+						ptr_color[i * 3 + 1] = temp / 3;
+						temp = ptr_image1[i * 3 + 2] + ptr_image2[i * 3 + 2] + ptr_image3[i * 3 + 2];
+						ptr_color[i * 3 + 2] = temp / 3;
 					}
+				}
+			}
+		}
+	}
+	else if (phaseshift_scan_mode == PHASESHIFT_RGB){
+		return 1;
+	}
+	return 1;
+}
+
+int PhaseShift::ThreePhaseDecodeAtan()
+{
+	double sqrt3 = sqrt(3);
+	double TWO_PI = 2 * M_PI;
+	if (three_phase_mask.isContinuous()){
+		Size size = three_phase_mask.size();
+		size.width *= size.height;
+		size.height = 1;
+		const unsigned char *ptr_phase1 = three_image_gray1.ptr<unsigned char>(0);
+		const unsigned char *ptr_phase2 = three_image_gray2.ptr<unsigned char>(0);
+		const unsigned char *ptr_phase3 = three_image_gray3.ptr<unsigned char>(0);
+		const unsigned char *ptr_mask = three_phase_mask.ptr<unsigned char>(0);
+		double *ptr_wrapped = three_wrapped_atan.ptr<double>(0);
+		for (int i = 0; i < size.width; ++i){
+			if (ptr_mask[i] != 0){
+				ptr_wrapped[i] = (double)atan2((double)sqrt3*(ptr_phase1[i] - ptr_phase3[i]), (double)(2 * ptr_phase2[i] - ptr_phase1[i] - ptr_phase3[i]))/TWO_PI;
+			}
+			else{
+				ptr_wrapped[i] = 0.0f;
+			}
+		}
+	}
+	return 1;
+}
+
+int PhaseShift::ThreePhaseDecodeFast()
+{
+	return 1;
+}
+
+int PhaseShift::ThreePhaseComputeQuality()
+{
+	if (three_phase_mask.isContinuous()){
+		Size size = three_phase_mask.size();
+		int step = size.width;
+		size.width *= size.height;
+		
+		const unsigned char *ptr_mask = three_phase_mask.ptr<unsigned char>(0);	 
+		const double *ptr_range = three_phase_range.ptr<double>(0);
+		const double *ptr_phase = three_wrapped_atan.ptr<double>(0);
+		double *ptr_quality = three_phase_quality.ptr<double>(0);				
+		for (int c = 0; c < size.width - 1; ++c){						
+			if (ptr_mask[c] != 0){
+				ptr_quality[c] =(DistSquare(ptr_phase[c], ptr_phase[c - 1])	  //the bigger,the better
+					+ DistSquare(ptr_phase[c], ptr_phase[c + 1])
+					+ DistSquare(ptr_phase[c], ptr_phase[c - step])
+					+ DistSquare(ptr_phase[c], ptr_phase[c + step])) ;
+				three_quality_average += ptr_quality[c];
+				three_quality_count++;
+			}
+		}
+		three_quality_average /= three_quality_count;
+		for (int c = 1; c < size.width - 1; ++c){
+			if (ptr_mask[c] != 0){
+				three_quality_deviation += (ptr_quality[c] - three_quality_average)*(ptr_quality[c] - three_quality_average);
+			}
+		}
+		three_quality_deviation = sqrt(three_quality_deviation / three_quality_count);
+	}
+
+	return 1;
+}
+
+int PhaseShift::ThreePhaseUnwrapBasedQuality()
+{
+	unsigned char *ptr_process = three_unwrap_process.ptr<unsigned char>(0);
+	double *ptr_wrapped = three_wrapped_atan.ptr<double>(0);
+	double *ptr_quality = three_phase_quality.ptr<double>(0);
+	double *ptr_unwrapped = three_unwrapped_quality.ptr<double>(0);
+
+	int x = image_width/2, y =image_height/2 ;  //start from centroid of image
+	int step = image_width;
+	double quality = ptr_quality[y*step + x];
+	double phase = ptr_wrapped[y*step+x];
+	UnWrapPath path = UnWrapPath(x, y, quality, phase);
+	unwrap_queue.push(path);
+
+	while (!unwrap_queue.empty()){
+		path = unwrap_queue.top();
+		unwrap_queue.pop();
+		x = path.x;
+		y = path.y;
+		quality = path.quality;
+		phase = path.phase;
+		if (ptr_process[y*step + x]){
+			ptr_process[y*step + x] = 0;
+			ptr_unwrapped[y*step + x] = path.phase;
+			if ((x > 0) && (ptr_process[y*step + x-1]))
+				ThreePhaseUnwrapBasedQuality(x - 1, y, quality, phase);
+			if ((x < image_width - 1) && (ptr_process[y*step + x + 1]))
+				ThreePhaseUnwrapBasedQuality(x + 1, y, quality, phase);
+			if ((y > 0) && (ptr_process[(y-1)*step + x]))
+				ThreePhaseUnwrapBasedQuality(x, y-1, quality, phase);
+			if ((y < image_height - 1) && (ptr_process[(y+1)*step + x]))
+				ThreePhaseUnwrapBasedQuality(x, y+1, quality, phase);
+		}
+	}
+	return 1;
+}
+
+int PhaseShift::ThreePhaseUnwrapBasedQuality(int x, int y, double quality, double phase)
+{
+	double *ptr_wrapped = three_wrapped_atan.ptr<double>(0);
+	double *ptr_quality = three_phase_quality.ptr<double>(0);
+	double adjacent_phase_diff = ptr_wrapped[y*image_width + x] - (phase - (int)phase);
+	if (adjacent_phase_diff > 0.5f)
+		adjacent_phase_diff -= 1.0f;
+	if (adjacent_phase_diff < -0.5f)
+		adjacent_phase_diff += 1.0f;
+	unwrap_queue.push(UnWrapPath(x, y, ptr_quality[y*image_width + x]+quality, phase+adjacent_phase_diff));
+	return 1;
+}
+
+int PhaseShift::ThreePhaseUnwrapBasedMultiLevelQuality(const double quality_threshold)
+{
+	const unsigned char *ptr_mask = three_phase_mask.ptr<unsigned char>(0);
+	unsigned char *ptr_processed = three_unwrap_process.ptr<unsigned char>(0);
+	const double *ptr_wrapped = three_wrapped_atan.ptr<double>(0);
+	const double *ptr_quality = three_phase_quality.ptr<double>(0);
+	double *ptr_unwrapped = three_unwrapped_quality.ptr<double>(0);
+
+	int start_x = image_width / 2, start_y = image_height / 2;
+	int step = image_width;
+	priority_queue<UnWrapPath> queue_temp;
+	//find one point around image's centroid as start point
+	for (int i = -2; i < 3; ++i){
+		start_x = image_width/2+i;
+		for (int j = -2; j < 3; ++j){
+			start_y = image_height / 2 + j;
+			if (ptr_mask[start_y*step + start_x])
+				queue_temp.push(UnWrapPath(start_x, start_y, ptr_quality[start_y*step + start_x], ptr_wrapped[start_y*step + start_x]));
+		}
+	}
+	UnWrapPath start_point = queue_temp.top();
+	if (start_point.quality < quality_threshold){ return 0; }	//start point's quality is lower than quality_threshold
+	ptr_processed[start_point.y*step + start_point.x] = 255;
+	ptr_unwrapped[start_point.y*step + start_point.x] = start_point.phase;
+
+	//scan the first region 
+	for (int r = start_point.y; r > 0; --r){
+		for (int c = start_point.x; c > 0; --c){
+			if ((ptr_mask[r*step + c])&&(!ptr_processed[r*step+c])&&(ptr_quality[r*step+c]>quality_threshold)){	
+				//choose unwrapped point facing start point as reference
+				if (ptr_processed[r*step + c + 1]){				//processed points' quality is higher than quality threshold  
+						ThreePhaseUnwrapBasedMultiLevelQuality(c + 1, r, c, r);
+						ptr_processed[r*step + c] = 255;
+					}
+				else if (ptr_processed[(r+1)*step + c]){
+						ThreePhaseUnwrapBasedMultiLevelQuality(c, r + 1, c, r);
+						ptr_processed[r*step + c ] = 255;
+					}
+				}
+			}
+		}
+	//scan the second region 
+	for (int r = start_point.y; r > 0; --r){
+		for (int c = start_point.x+1; c <image_width-1 ; ++c){
+			if ((ptr_mask[r*step + c]) && (!ptr_processed[r*step + c]) && (ptr_quality[r*step + c]>quality_threshold)){
+				//choose unwrapped point facing start point as reference
+				if (ptr_processed[r*step + c - 1]){
+					ThreePhaseUnwrapBasedMultiLevelQuality(c - 1, r, c, r);
+					ptr_processed[r*step + c] = 255;
+				}
+				else if (ptr_processed[(r + 1)*step + c]){
+					ThreePhaseUnwrapBasedMultiLevelQuality(c, r + 1, c, r);
+					ptr_processed[r*step + c] = 255;
+				}
+			}
+		}
+	}
+	//scan the third region 
+	for (int r = start_point.y+1; r < image_height-1; ++r){
+		for (int c = start_point.x; c <image_width-1; ++c){
+			if ((ptr_mask[r*step + c]) && (!ptr_processed[r*step + c]) && (ptr_quality[r*step + c]>quality_threshold)){
+				//choose unwrapped point facing start point as reference
+				if (ptr_processed[r*step + c - 1]){
+					ThreePhaseUnwrapBasedMultiLevelQuality(c - 1, r, c, r);
+					ptr_processed[r*step + c] = 255;
+				}
+				else if (ptr_processed[(r - 1)*step + c]){
+					ThreePhaseUnwrapBasedMultiLevelQuality(c, r - 1, c, r);
+					ptr_processed[r*step + c] = 255;
+				}
+			}
+		}
+	}
+	//scan the fourth region 
+	for (int r = start_point.y + 1; r < image_height-1; ++r){
+		for (int c = start_point.x-1; c > 0; --c){
+			if ((ptr_mask[r*step + c]) && (!ptr_processed[r*step + c]) && (ptr_quality[r*step + c]>quality_threshold)){
+				//choose unwrapped point facing start point as reference
+				if (ptr_processed[r*step + c + 1]){
+					ThreePhaseUnwrapBasedMultiLevelQuality(c + 1, r, c, r);
+					ptr_processed[r*step + c] = 255;
+				}
+				else if (ptr_processed[(r - 1)*step + c]){
+					ThreePhaseUnwrapBasedMultiLevelQuality(c, r - 1, c, r);
+					ptr_processed[r*step + c] = 255;
+				}
+			}
+		}
+	}
+	Mat temp = three_phase_mask - three_unwrap_process;
+	return 1;
+}
+
+int PhaseShift::ThreePhaseUnwrapBasedMultiLevelQuality(int source_x, int source_y, int dst_x, int dst_y)
+{
+	double *ptr_wrapped = three_wrapped_atan.ptr<double>(0);
+	double *ptr_unwrapped = three_unwrapped_quality.ptr<double>(0);
+	double adjacent_phase_diff = ptr_wrapped[dst_y*image_width + dst_x] - 
+		(ptr_unwrapped[source_y*image_width + source_x] - (int)ptr_unwrapped[source_y*image_width + source_x]);
+	if (adjacent_phase_diff > 0.5f)
+		adjacent_phase_diff -= 1.0f;
+	if (adjacent_phase_diff < -0.5f)
+		adjacent_phase_diff += 1.0f;
+	ptr_unwrapped[dst_y*image_width + dst_x] = ptr_unwrapped[source_y*image_width + source_x] + adjacent_phase_diff;
+	return 1;
+}
+
+int PhaseShift::MultiLevelQualitySolveRemain(const double quality_threshold)
+{
+	unsigned char *ptr_processed = three_unwrap_process.ptr<unsigned char>(0);
+	const unsigned char *ptr_mask = three_phase_mask.ptr<unsigned char>(0);
+	const double *ptr_wrapped = three_wrapped_atan.ptr<double>(0);
+	const double *ptr_quality = three_phase_quality.ptr<double>(0);
+	double *ptr_unwrapped = three_unwrapped_quality.ptr<double>(0);
+
+	int step = image_width;
+	UnWrapPath ref_point;
+
+	for (int r = 1; r < image_height - 1; ++r){
+		for (int c = 1; c < image_width - 1; ++c){
+			if ((ptr_mask[r*step + c]) && (!ptr_processed[r*step + c]) && (ptr_quality[r*step + c] > quality_threshold)){
+				priority_queue<UnWrapPath> queue_temp;
+				if (ptr_processed[r*step + c - 1])	 queue_temp.push(UnWrapPath(c - 1, r, ptr_quality[r*step + c - 1], ptr_wrapped[r*step + c - 1]));
+				if (ptr_processed[r*step + c + 1])	 queue_temp.push(UnWrapPath(c + 1, r, ptr_quality[r*step + c + 1], ptr_wrapped[r*step + c + 1]));
+				if (ptr_processed[(r - 1)*step + c]) queue_temp.push(UnWrapPath(c, r - 1, ptr_quality[(r - 1)*step + c], ptr_wrapped[(r - 1)*step + c]));
+				if (ptr_processed[(r + 1)*step + c]) queue_temp.push(UnWrapPath(c, r + 1, ptr_quality[(r + 1)*step + c], ptr_wrapped[(r + 1)*step + c]));
+				if (!queue_temp.empty()){
+					ref_point = queue_temp.top();
+					ThreePhaseUnwrapBasedMultiLevelQuality(ref_point.x, ref_point.y, c, r);
+					ptr_processed[r*step + c] = 255;
 				}
 			}
 		}
@@ -667,11 +959,46 @@ int PhaseShift::ComputeMaskRegion()
 	return 1;
 }
 
-int ThreePhaseDecodeAtan()
+void PhaseShift::DisplayUnwrapResult()
 {
-	return 1;
-}
-int ThreePhaseDecodeFast()
-{
-	return 1;
+	const unsigned char *ptr_processed = three_unwrap_process.ptr<unsigned char>(0);
+	const double *ptr_unwrapped = three_unwrapped_quality.ptr<double>(0);
+	unsigned short *ptr_result = three_unwrapped_result.ptr<unsigned short>(0);
+
+	//pay attention to initial value
+	double phase_min,phase_max ,phase_scale=0.0f;
+	if (phaseshift_scan_mode == VERTICAL){
+		phase_min = pattern_width /pattern_period , phase_max = -phase_min;	 
+		phase_scale = pattern_width;
+	}
+	else if (phaseshift_scan_mode == HORIZONTAL){
+		phase_min = pattern_height / pattern_period, phase_max = -phase_min;
+		phase_scale = pattern_height;
+	}
+	for (int i = 0; i < image_width*image_height - 1; ++i){
+		if (ptr_processed[i]){
+			if (ptr_unwrapped[i] < phase_min)	phase_min = ptr_unwrapped[i];
+			if (ptr_unwrapped[i] > phase_max)	phase_max = ptr_unwrapped[i];
+		}
+	}
+	phase_scale = phase_scale / (phase_max - phase_min);
+	for (int i = 0; i < image_width*image_height - 1; ++i){
+		if (ptr_processed[i])
+			ptr_result[i] = (ptr_unwrapped[i] - phase_min)*phase_scale;
+	}
+
+	//calculate first-derivative
+	Mat first_derivative(image_height, image_width, CV_16UC1, Scalar(0));
+	Mat second_derivative(image_height, image_width, CV_16UC1, Scalar(0));
+	Mat third_derivative(image_height, image_width, CV_16UC1, Scalar(0));
+	Mat	abs_temp1, abs_temp2,abs_temp3;
+	Sobel(three_unwrapped_result, first_derivative, -1, 1, 0, 3, 1.0, 0.0, 4);
+	first_derivative.convertTo(abs_temp1, CV_8UC1, 0.2, 0.0);
+
+	Laplacian(three_unwrapped_result, second_derivative, -1,3, 1.0, 0.0, 4);
+	second_derivative.convertTo(abs_temp2, CV_8UC1, 0.2, 0.0);
+
+	Sobel(second_derivative, third_derivative, -1, 1, 0, 3, 1.0, 0.0, 4);
+	third_derivative.convertTo(abs_temp3, CV_8UC3, 0.2, 0.0);
+
 }

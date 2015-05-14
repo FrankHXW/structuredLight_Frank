@@ -203,8 +203,6 @@ int GenerateChessBoardPattern(SlParameter &sl_parameter)
 }
 
 
-
-
 //Create output directory
 int CreateOutputDirectory(SlParameter &sl_parameter)
 {
@@ -222,7 +220,6 @@ int CreateOutputDirectory(SlParameter &sl_parameter)
 	cout << "create output directory successful!" << endl<<endl;
 	return 0;
 }
-
 
 
 //Read structuredlight setting parameters from structuredlight.xml
