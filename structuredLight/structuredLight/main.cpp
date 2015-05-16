@@ -18,15 +18,9 @@ clock_t clock_begin, clock_end;
 
 int main()
 {
-	SlParameter slparameter;
-	SlCalibration slcalibration;
+	SlParameter slparameter(1);
+	SlCalibration slcalibration(1);
 
-	//Read structuredlight setting parameters from structuredlight.xml
-	Read_slparameter(slparameter,slcalibration);
-
-//	//Create output directory
-	CreateOutputDirectory(slparameter);
-//
 //	//Initialize projector
 	namedWindow("projector window", 0);
 	moveWindow("projector window", 1920, 0);
@@ -34,7 +28,7 @@ int main()
 	ProjectorInitialize(slparameter);
 //
 //	//Initialize camera
-//	CameraInitialize(slparameter);
+	CameraInitialize(slparameter);
 ////
 //	//Run camera calibration
 ////	RunCameraCalibration(slparameter,slcalibration);
@@ -50,7 +44,7 @@ int main()
 	RunStructuredLight(slparameter,slcalibration);
 
 	Mat temp;
-	DepthMapConvertToGray(slparameter.depth_points, temp, slparameter.depth_valid);
+	DepthMapConvertToGray(slparameter.depth_points, temp, slparameter.depth_valid, slparameter.distance_range[0], slparameter.distance_range[1]);
 
 
 	PhaseShift slphaseshift(PHASESHIFT_THREE, VERTICAL);
@@ -105,7 +99,7 @@ int main()
 	cout << clock() - clock_begin << endl;
 
 	Mat temp1;
-	DepthMapConvertToGray(slparameter.depth_points, temp1, slphaseshift.three_unwrap_process);
+	DepthMapConvertToGray(slparameter.depth_points, temp1, slphaseshift.three_unwrap_process, slparameter.distance_range[0], slparameter.distance_range[1]);
 
 	clock_begin = clock();
 	char save_name[] = ".\\output\\phaseshift\\phaseshift_three\\vertical\\image\\pointCloud.x3d";
@@ -113,7 +107,7 @@ int main()
 	cout << clock() - clock_begin << endl;
 
 	//Clear ram and camera
-    Clear();
+    CameraClear();
 }
 
 

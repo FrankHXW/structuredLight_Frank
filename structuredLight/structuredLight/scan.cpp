@@ -6,6 +6,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <string>
 #include <direct.h>
+#include <time.h>
 
 #include "structuredlight.h"
 #include "auxiliaryfunctions.h"
@@ -40,7 +41,7 @@ void ColorizeWinter(Mat &src, Mat &dst, Mat &mask)
 
 
 //src:CV_64FC3,channel_3 is depth, dst:CV_8UC1, mask:CV_8UC1
-void DepthMapConvertToGray(const Mat &src, Mat &dst,const Mat &mask)
+void DepthMapConvertToGray(const Mat &src, Mat &dst,const Mat &mask,int depth_min,int depth_max)
 {
 	const double *ptr_src = src.ptr<double>(0);
 	const unsigned char *ptr_mask = mask.ptr<unsigned char>(0);
@@ -48,30 +49,17 @@ void DepthMapConvertToGray(const Mat &src, Mat &dst,const Mat &mask)
 	dst.setTo(0);
 	unsigned char *ptr_dst = dst.ptr<unsigned char>(0);
 	
-	double min = 100000, max = 0, sum=0.0f, average =0.0f,scale=0.0f; 
-	int step = src.cols,count=0;
+	int step = src.cols;
+	double scale = 255.0f / depth_max;
 
-	for (int r = 0; r < src.rows - 1; ++r){
-		for (int c = 0; c <src.cols-1; c += 1){
-			if (ptr_mask[r*step + c] != 0){
-				if (ptr_src[r*step * 3 + 3 * c + 2] < min){min = ptr_src[r*step * 3 + 3 * c + 2];  }
-				else if (ptr_src[r*step * 3 + 3 * c + 2] > max){max = ptr_src[r*step * 3 + 3 * c + 2]; }
-				sum+= ptr_src[r*step * 3 + 3 * c + 2];
-				count++;
-			}
-		}
-	}
-	average = sum / count;
-	scale = 255.0f / 450.0f;
 	for (int r = 0; r < src.rows - 1; ++r){
 		for (int c = 0; c <src.cols - 1; c += 1){
 			if (ptr_mask[r*step + c] != 0){
-				ptr_dst[r*step + c] = (450-ptr_src[r*step * 3 + 3 * c + 2]) *scale;
+				ptr_dst[r*step + c] = (depth_max-ptr_src[r*step * 3 + 3 * c + 2]) *scale;
 			}
 		}
 	}
 }
-
 
 
 // Find intersection between a 3D plane and a 3D line.
@@ -157,158 +145,89 @@ int SaveX3DFile(char *filename, Mat &points, Mat &colors, Mat &mask)
 	return 0;
 }
 
-
 int GenerateGrayCode(SlParameter &sl_parameter)
 {
-	cout << "generate gray code........" << endl;
-	cout << "press 'e' to skip......" << endl;
-	cout << "press 'o' to start....." << endl;
-	int key = -1;
 	ostringstream save_name;
-	if (sl_parameter.colum_scan_flag)
-	{
-		sl_parameter.colum_scan_amount = (int)(ceil(log(sl_parameter.projector_width) / log(2)));
-		sl_parameter.colum_scan_shift = floor((pow(2.0, sl_parameter.colum_scan_amount) - sl_parameter.projector_width) / 2);
-	}
-	else
-	{
-		sl_parameter.colum_scan_amount = 0;
-		sl_parameter.colum_scan_shift = 0;
-	}
-	if (sl_parameter.row_scan_flag)
-	{
-		sl_parameter.row_scan_amount = (int)(ceil(log(sl_parameter.projector_height) / log(2)));
-		sl_parameter.row_scan_shift = floor((pow(2.0, sl_parameter.row_scan_amount) - sl_parameter.projector_height) / 2);
-	}
-	else
-	{
-		sl_parameter.row_scan_amount = 0;
-		sl_parameter.row_scan_shift = 0;
-	}
-	//define first code as an white image
-	Mat image_temp(sl_parameter.projector_height, sl_parameter.projector_width, CV_8UC1);
-	for (int i = 0; i <=sl_parameter.colum_scan_amount + sl_parameter.row_scan_amount; ++i)
-		sl_parameter.projector_gray_code_image.push_back(image_temp.clone());  //pay attention to clone()
-	sl_parameter.projector_gray_code_image[0].setTo(255);
-
-//	key = waitKey();
-	key = 'e';   //read graycode directly
-	if (key == 'o')	  //generate gray code image
-	{
-		//define colum scan image,saving at 1~colum_scan_amount
-		if (sl_parameter.colum_scan_flag)
-		{
-			cout << "generate graycode colum scan image......" << endl;
-			for (int i = 0; i < sl_parameter.projector_width; ++i)
-			{
-				for (int j = 1; j <= sl_parameter.colum_scan_amount; ++j)
-				{
-					if (j == 1)
-						sl_parameter.projector_gray_code_image[j].at<unsigned char>(0, i) = (((i + sl_parameter.colum_scan_shift) >> (sl_parameter.colum_scan_amount - j)) & 1);
-					else
-						sl_parameter.projector_gray_code_image[j].at<unsigned char>(0, i) = (((i + sl_parameter.colum_scan_shift) >> (sl_parameter.colum_scan_amount - j + 1)) & 1) ^ ((i + sl_parameter.colum_scan_shift) >> (sl_parameter.colum_scan_amount - j) & 1);
-					sl_parameter.projector_gray_code_image[j].at<unsigned char>(0, i) *= 255;
-					for (int k = 1; k < sl_parameter.projector_height; ++k)
-					{
-						sl_parameter.projector_gray_code_image[j].at<unsigned char>(k, i) = sl_parameter.projector_gray_code_image[j].at<unsigned char>(0, i);
-					}
+	//define colum scan image,saving at 1~colum_scan_amount
+	if (sl_parameter.colum_scan_flag){
+		cout << "generate graycode colum scan image......" << endl;
+		for (int i = 0; i < sl_parameter.projector_width; ++i){
+			for (int j = 1; j <= sl_parameter.colum_scan_amount; ++j){
+				if (j == 1)
+					sl_parameter.projector_gray_code_image[j].at<unsigned char>(0, i) = (((i + sl_parameter.colum_scan_shift) >> (sl_parameter.colum_scan_amount - j)) & 1);
+				else
+					sl_parameter.projector_gray_code_image[j].at<unsigned char>(0, i) = (((i + sl_parameter.colum_scan_shift) >> (sl_parameter.colum_scan_amount - j + 1)) & 1) ^ ((i + sl_parameter.colum_scan_shift) >> (sl_parameter.colum_scan_amount - j) & 1);
+				sl_parameter.projector_gray_code_image[j].at<unsigned char>(0, i) *= 255;
+				for (int k = 1; k < sl_parameter.projector_height; ++k){
+					sl_parameter.projector_gray_code_image[j].at<unsigned char>(k, i) = sl_parameter.projector_gray_code_image[j].at<unsigned char>(0, i);
 				}
 			}
-			cout << "generate graycode colum scan image successful!" << endl;
 		}
+	}
 
-		//define row scan image,saving at colum_scan_amount+1~colum_scan_amount+row_scan_amount+1
-		if (sl_parameter.row_scan_flag)
-		{
-			cout << "generate graycode row scan image......" << endl;
-			for (int i = 0; i < sl_parameter.projector_height; ++i)
-			{
-				for (int j = 1; j <= sl_parameter.row_scan_amount; ++j)
-				{
-					if (j == 1)
-						sl_parameter.projector_gray_code_image[sl_parameter.colum_scan_amount + j].at<unsigned char>(i, 0) = (((i + sl_parameter.row_scan_shift) >> (sl_parameter.row_scan_amount - j)) & 1);
-					else
-						sl_parameter.projector_gray_code_image[sl_parameter.colum_scan_amount + j].at<unsigned char>(i, 0) = (((i + sl_parameter.row_scan_shift) >> (sl_parameter.row_scan_amount - j + 1)) & 1) ^ (((i + sl_parameter.row_scan_shift) >> (sl_parameter.row_scan_amount - j)) & 1);
-					sl_parameter.projector_gray_code_image[sl_parameter.colum_scan_amount + j].at<unsigned char>(i, 0) *= 255;
-					for (int k = 1; k < sl_parameter.projector_width; ++k)
-					{
-						sl_parameter.projector_gray_code_image[sl_parameter.colum_scan_amount + j].at<unsigned char>(i, k) = sl_parameter.projector_gray_code_image[sl_parameter.colum_scan_amount + j].at<unsigned char>(i, 0);
-					}
+	//define row scan image,saving at colum_scan_amount+1~colum_scan_amount+row_scan_amount+1
+	if (sl_parameter.row_scan_flag){
+		cout << "generate graycode row scan image......" << endl;
+		for (int i = 0; i < sl_parameter.projector_height; ++i){
+			for (int j = 1; j <= sl_parameter.row_scan_amount; ++j){
+				if (j == 1)
+					sl_parameter.projector_gray_code_image[sl_parameter.colum_scan_amount + j].at<unsigned char>(i, 0) = (((i + sl_parameter.row_scan_shift) >> (sl_parameter.row_scan_amount - j)) & 1);
+				else
+					sl_parameter.projector_gray_code_image[sl_parameter.colum_scan_amount + j].at<unsigned char>(i, 0) = (((i + sl_parameter.row_scan_shift) >> (sl_parameter.row_scan_amount - j + 1)) & 1) ^ (((i + sl_parameter.row_scan_shift) >> (sl_parameter.row_scan_amount - j)) & 1);
+				sl_parameter.projector_gray_code_image[sl_parameter.colum_scan_amount + j].at<unsigned char>(i, 0) *= 255;
+				for (int k = 1; k < sl_parameter.projector_width; ++k){
+					sl_parameter.projector_gray_code_image[sl_parameter.colum_scan_amount + j].at<unsigned char>(i, k) = sl_parameter.projector_gray_code_image[sl_parameter.colum_scan_amount + j].at<unsigned char>(i, 0);
 				}
 			}
-			cout << "generate graycode row scan image successful!" << endl;
 		}
-
 	}
-	else if (key == 'e')
-	{
-		if (sl_parameter.colum_scan_flag)
-		{
-			cout << "read graycode colum scan image....." << endl;
-			for (int i = 0; i <= sl_parameter.colum_scan_amount; ++i)
-			{
-				save_name.str("");
-				save_name << ".\\output\\test\\projector_scan_image_" << i << ".jpg";
-				sl_parameter.projector_gray_code_image[i] = imread(string(save_name.str()));
-			}
-			cout << "read graycode colum scan image successful!" << endl;
-		}
-
-		if (sl_parameter.row_scan_flag)
-		{
-			cout << "read graycode colum scan image....." << endl;
-			for (int i = sl_parameter.colum_scan_amount+1; i <= sl_parameter.colum_scan_amount + sl_parameter.row_scan_amount; ++i)
-			{
-				save_name.str("");
-				save_name << ".\\output\\test\\projector_scan_image_" << i << ".jpg";
-				sl_parameter.projector_gray_code_image[i] = imread(string(save_name.str()));
-			}
-			cout << "read graycode colum scan image successful!" << endl;
-		}
-		cout << endl;
-	}
-	else
-	{
-		cout << "generate or read gray code iamge failed....." << endl<<endl;
-		return -1;
-	}
-
-#ifdef DEBUG_PROJECT
-	if (sl_parameter.colum_scan_flag)
-	{
-		for (int i = 0; i <= sl_parameter.colum_scan_amount; ++i)
-		{
-			if (key == 'o')
-			{
-				save_name.str("");
-				save_name << ".\\output\\test\\projector_scan_image_" << i << ".jpg";
-				imwrite(string(save_name.str()), sl_parameter.projector_gray_code_image[i]);
-			}
+	// save graycode
+	if (sl_parameter.colum_scan_flag){
+		for (int i = 0; i <= sl_parameter.colum_scan_amount; ++i){
+			save_name.str("");
+			save_name << ".\\output\\test\\projector_scan_image_" << i << ".jpg";
+			imwrite(string(save_name.str()), sl_parameter.projector_gray_code_image[i]);
 			imshow("projector window", sl_parameter.projector_gray_code_image[i]);
 			waitKey(sl_parameter.project_capture_delay / 2);
 		}
 	}
-
-	if (sl_parameter.row_scan_flag)
-	{
-		for (int i = sl_parameter.colum_scan_amount+1; i <= sl_parameter.colum_scan_amount + sl_parameter.row_scan_amount; ++i)
-		{
-			if (key == 'o')
-			{
-				save_name.str("");
-				save_name << ".\\output\\test\\projector_scan_image_" << i << ".jpg";
-				imwrite(string(save_name.str()), sl_parameter.projector_gray_code_image[i]);
-			}
+	if (sl_parameter.row_scan_flag){
+		for (int i = sl_parameter.colum_scan_amount+1; i <= sl_parameter.colum_scan_amount + sl_parameter.row_scan_amount; ++i){	
+			save_name.str("");
+			save_name << ".\\output\\test\\projector_scan_image_" << i << ".jpg";
+			imwrite(string(save_name.str()), sl_parameter.projector_gray_code_image[i]);
 			imshow("projector window", sl_parameter.projector_gray_code_image[i]);
 			waitKey(sl_parameter.project_capture_delay / 2);
 		}
 	}
-#endif
 	imshow("projector window", sl_parameter.projector_gray_code_image[0]);
 	waitKey(sl_parameter.project_capture_delay);
 	return 0;
 }
 
+int ReadGrayCode(SlParameter &sl_parameter)
+{
+	ostringstream save_name;
+	if (sl_parameter.colum_scan_flag){
+		cout << "read graycode colum scan image....." << endl;
+		for (int i = 0; i <= sl_parameter.colum_scan_amount; ++i){
+			save_name.str("");
+			save_name << ".\\output\\test\\projector_scan_image_" << i << ".jpg";	//read as grayscale
+			sl_parameter.projector_gray_code_image[i] = imread(string(save_name.str()),0);
+		}
+	}
+	if (sl_parameter.row_scan_flag){
+		cout << "read graycode colum scan image....." << endl;
+		for (int i = sl_parameter.colum_scan_amount + 1; i <= sl_parameter.colum_scan_amount + sl_parameter.row_scan_amount; ++i){
+			save_name.str("");
+			save_name << ".\\output\\test\\projector_scan_image_" << i << ".jpg";
+			sl_parameter.projector_gray_code_image[i] = imread(string(save_name.str()),0);  //read as grayscale
+		}
+	}
+	imshow("projector window", sl_parameter.projector_gray_code_image[0]);
+	waitKey(sl_parameter.project_capture_delay);
+	return 1;
+}
 
 int CaptureLivingImage(SlParameter &sl_parameter)
 {
@@ -341,179 +260,132 @@ int CaptureLivingImage(SlParameter &sl_parameter)
 	return 0;
 }
 
-
-int RunScanningObject(SlParameter &sl_parameter)
+int RunScanObject(SlParameter &sl_parameter, bool save_enable)
 {
-	cout << "run scanning object....." << endl;
-	cout << "press 'e' to skip......" << endl;
-	cout << "press 'o' to start....." << endl;
+	ostringstream save_name;
 	Mat frame_grab(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC3);
 	Mat projector_frame(sl_parameter.projector_height, sl_parameter.projector_width, CV_8UC1);
-	int key = -1;
-	ostringstream save_name;
+	namedWindow("scan object", WINDOW_AUTOSIZE);
+	moveWindow("scan object", 80, 0);
 
-	//Initialize camera_gray_code vector
-	frame_grab.setTo(0);
-	if (sl_parameter.colum_scan_flag||sl_parameter.row_scan_flag)
-	{
-		for (int i = 0; i <= 2 * (sl_parameter.colum_scan_amount + sl_parameter.row_scan_flag) + 1; ++i)
-			sl_parameter.camera_gray_code_image.push_back(frame_grab.clone());  //pay attention to clone()
-	}
-
-	//create a window to show capture result
-	namedWindow("scanning object", WINDOW_AUTOSIZE);
-	moveWindow("camera desired image", 20, 0);
-	imshow("projector window", sl_parameter.projector_gray_code_image[0]);
-//	key = waitKey();
-	key = 'e';   //scan object directly
-	if (key == 'o')
-	{
-		//enable colum scan 
-		if (sl_parameter.colum_scan_flag)  
-		{
-			for (int i = 0; i <= sl_parameter.colum_scan_amount; ++i)
-			{
-				//Display gray code image and capture,save
-				projector_frame = sl_parameter.projector_gray_code_image[i] * (sl_parameter.projector_gain / 100.0f);
-				imshow("projector window", projector_frame);
-				waitKey(sl_parameter.project_capture_delay);
-				if (GetImage(frame_grab))
-				{
-					waitKey(sl_parameter.project_capture_delay);
-					GetImage(frame_grab);
-					sl_parameter.camera_gray_code_image[2 * i] = frame_grab*(sl_parameter.camera_gain / 100.0f);
+	//enable colum scan 
+	if (sl_parameter.colum_scan_flag){
+		cout << "run colum scan object....." << endl;
+		for (int i = 0; i <= sl_parameter.colum_scan_amount-1; ++i){
+			//Display gray code image and capture,save
+			projector_frame = sl_parameter.projector_gray_code_image[i] * (sl_parameter.projector_gain / 100.0f);
+			imshow("projector window", projector_frame);
+			waitKey(sl_parameter.project_capture_delay);
+			if (GetImage(frame_grab)){
+				sl_parameter.camera_gray_code_image[2 * i] = frame_grab;
+//				sl_parameter.camera_gray_code_image[2 * i] = frame_grab*(sl_parameter.camera_gain / 100.0f);
+				imshow("scan object", frame_grab);
+				if (save_enable){
 					save_name.str("");
 					save_name << ".\\output\\test\\camera_scan_image_" << 2 * i << ".jpg";
 					imwrite(string(save_name.str()), sl_parameter.camera_gray_code_image[2 * i]);
-					imshow("scanning object", sl_parameter.camera_gray_code_image[2 * i]);
+					
 				}
+			}
+//			waitKey(sl_parameter.project_capture_delay); //must delay betweenn two frame
 
-				//Display inverse gray code image and capture,save
-				projector_frame.setTo(255);
-				projector_frame = projector_frame - sl_parameter.projector_gray_code_image[i];
-				projector_frame = projector_frame*(sl_parameter.projector_gain / 100.0f);
-				imshow("projector window", projector_frame);
-				waitKey(sl_parameter.project_capture_delay);
-				if (GetImage(frame_grab))
-				{
-					waitKey(sl_parameter.project_capture_delay);
-					GetImage(frame_grab);
-					sl_parameter.camera_gray_code_image[2 * i + 1] = frame_grab*(sl_parameter.camera_gain / 100.0f);
+			//Display inverse gray code image and capture,save
+			projector_frame.setTo(255);
+			projector_frame = projector_frame - sl_parameter.projector_gray_code_image[i];
+			projector_frame = projector_frame*(sl_parameter.projector_gain / 100.0f);
+			imshow("projector window", projector_frame);
+			waitKey(sl_parameter.project_capture_delay);
+			if (GetImage(frame_grab)){
+				sl_parameter.camera_gray_code_image[2 * i + 1] = frame_grab;
+//				sl_parameter.camera_gray_code_image[2 * i + 1] = frame_grab*(sl_parameter.camera_gain / 100.0f);
+				imshow("scan object", frame_grab);
+				if (save_enable){
 					save_name.str("");
 					save_name << ".\\output\\test\\camera_scan_image_" << 2 * i + 1 << ".jpg";
 					imwrite(string(save_name.str()), sl_parameter.camera_gray_code_image[2 * i + 1]);
-					imshow("scanning object", sl_parameter.camera_gray_code_image[2 * i + 1]);
 				}
 			}
-			destroyWindow("scanning object");
-			cout << "object colum scan successful!" << endl << endl;
+//			waitKey(sl_parameter.project_capture_delay); //must delay betweenn two frame
 		}
+	}
 
-		//enable row scan 
-		if (sl_parameter.row_scan_flag)
-		{
-			for (int i = sl_parameter.colum_scan_amount + 1; i <= sl_parameter.colum_scan_amount + sl_parameter.row_scan_amount; ++i)
-			{
-				//Display gray code image and capture,save
-				projector_frame = sl_parameter.projector_gray_code_image[i] * (sl_parameter.projector_gain / 100.0f);
-				imshow("projector window", projector_frame);
-				waitKey(sl_parameter.project_capture_delay);
-				if (GetImage(frame_grab))
-				{
-					waitKey(sl_parameter.project_capture_delay);
-					GetImage(frame_grab);
-					sl_parameter.camera_gray_code_image[2 * i] = frame_grab*(sl_parameter.camera_gain / 100.0f);
+	//enable row scan 
+	if (sl_parameter.row_scan_flag){
+		cout << "run row scan object....." << endl;
+		for (int i = sl_parameter.colum_scan_amount + 1; i <= sl_parameter.colum_scan_amount + sl_parameter.row_scan_amount; ++i){
+			//Display gray code image and capture,save
+			projector_frame = sl_parameter.projector_gray_code_image[i] * (sl_parameter.projector_gain / 100.0f);
+			imshow("projector window", projector_frame);
+			waitKey(sl_parameter.project_capture_delay);
+			if (GetImage(frame_grab)){
+				sl_parameter.camera_gray_code_image[2 * i] = frame_grab*(sl_parameter.camera_gain / 100.0f);
+				imshow("scanning object", sl_parameter.camera_gray_code_image[2 * i]);
+				if (save_enable){
 					save_name.str("");
 					save_name << ".\\output\\test\\camera_scan_image_" << 2 * i << ".jpg";
 					imwrite(string(save_name.str()), sl_parameter.camera_gray_code_image[2 * i]);
-					imshow("scanning object", sl_parameter.camera_gray_code_image[2 * i]);
 				}
-
-				//Display inverse gray code image and capture,save
-				projector_frame.setTo(255);
-				projector_frame = projector_frame - sl_parameter.projector_gray_code_image[i];
-				projector_frame = projector_frame*(sl_parameter.projector_gain / 100.0f);
-				imshow("projector window", projector_frame);
-				waitKey(sl_parameter.project_capture_delay);
-				if (GetImage(frame_grab))
-				{
-					waitKey(sl_parameter.project_capture_delay);
-					GetImage(frame_grab);
-					sl_parameter.camera_gray_code_image[2 * i + 1] = frame_grab*(sl_parameter.camera_gain / 100.0f);
+			}
+			//Display inverse gray code image and capture,save
+			projector_frame.setTo(255);
+			projector_frame = projector_frame - sl_parameter.projector_gray_code_image[i];
+			projector_frame = projector_frame*(sl_parameter.projector_gain / 100.0f);
+			imshow("projector window", projector_frame);
+			waitKey(sl_parameter.project_capture_delay);
+			if (GetImage(frame_grab)){
+				sl_parameter.camera_gray_code_image[2 * i + 1] = frame_grab*(sl_parameter.camera_gain / 100.0f);
+				imshow("scanning object", sl_parameter.camera_gray_code_image[2 * i + 1]);
+				if (save_enable){
 					save_name.str("");
 					save_name << ".\\output\\test\\camera_scan_image_" << 2 * i + 1 << ".jpg";
 					imwrite(string(save_name.str()), sl_parameter.camera_gray_code_image[2 * i + 1]);
-					imshow("scanning object", sl_parameter.camera_gray_code_image[2 * i + 1]);
 				}
 			}
-			destroyWindow("scanning object");
-			cout << "object row scan successful!" << endl << endl;
 		}
 	}
-	
-	else if (key == 'e')
-	{
-		destroyWindow("scanning object");
-		if (sl_parameter.colum_scan_flag)
-		{
-			cout << "read graycode colum scan image....." << endl;
-			for (int i = 0; i <= (2 * sl_parameter.colum_scan_amount + 1); ++i)
-			{
-				save_name.str("");
-				save_name << ".\\output\\test\\camera_scan_image_" << i << ".jpg";
-				sl_parameter.camera_gray_code_image[i] = imread(string(save_name.str()));
-			}
-			cout << "read graycode colum scan image successful!" << endl << endl;
-		}
-
-		if (sl_parameter.row_scan_flag)
-		{
-			cout << "read graycode row scan image....." << endl << endl;
-			for (int i = 2 *( sl_parameter.colum_scan_amount + 1); i <= (2 * (sl_parameter.colum_scan_amount + sl_parameter.row_scan_amount) + 1); ++i)
-			{
-				save_name.str("");
-				save_name << ".\\output\\test\\camera_scan_image_" << i << ".jpg";
-				sl_parameter.camera_gray_code_image[i] = imread(string(save_name.str()));
-			}
-			cout << "read graycode row scan image successful!" << endl << endl;
-		}
-
-	}
-	else
-	{
-		cout << "scan object or read camera gray code image failed......" << endl << endl;
-		destroyWindow("scanning object");
-		return -1;
-	}
-
-	imshow("projector window", sl_parameter.projector_gray_code_image[0]);
-	waitKey(20);
 	return 0;
 }
 
+int ReadScanImage(SlParameter &sl_parameter)
+{
+	ostringstream read_name;
+	if (sl_parameter.colum_scan_flag){
+		cout << "read graycode colum scan image....." << endl;
+		for (int i = 0; i <= (2 * sl_parameter.colum_scan_amount + 1); ++i){
+			read_name.str("");
+			read_name << ".\\output\\test\\camera_scan_image_" << i << ".jpg";
+			sl_parameter.camera_gray_code_image[i] = imread(string(read_name.str()));
+		}
+	}
+	if (sl_parameter.row_scan_flag){
+		cout << "read graycode row scan image....." << endl << endl;
+		for (int i = 2 * (sl_parameter.colum_scan_amount + 1); i <= (2 * (sl_parameter.colum_scan_amount + sl_parameter.row_scan_amount) + 1); ++i){
+			read_name.str("");
+			read_name << ".\\output\\test\\camera_scan_image_" << i << ".jpg";
+			sl_parameter.camera_gray_code_image[i] = imread(string(read_name.str()));
+		}
+	}
+	return 1;
+}
 
 int DecodeGrayCode(SlParameter &sl_parameter)
 {
-	cout << "decode gray code image....." << endl;
 	Mat temp(sl_parameter.camera_height, sl_parameter.camera_width, CV_16UC1,Scalar(0));  
-	sl_parameter.decode_colum_scan_image.create(sl_parameter.camera_height, sl_parameter.camera_width, CV_16UC1); //pay attention to CV_16UC1
-	sl_parameter.decode_row_scan_image.create(sl_parameter.camera_height, sl_parameter.camera_width, CV_16UC1);
-	sl_parameter.decode_colum_scan_image.setTo(0);
-	sl_parameter.decode_row_scan_image.setTo(0);
-
 	Mat gray_code_image_gray(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC1, Scalar(0));			//use for gray image of normal gray_code_image 
 	Mat gray_code_inverse_image_gray(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC1, Scalar(0));    //use for gray image of inverse gray_code_image
 	Mat gray_code_image_bit_h(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC1, Scalar(0));	  //image's pixel value is 0 or 1,use for converting graycode to decimal 
 	Mat gray_code_image_bit_l(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC1, Scalar(0));	  //image's pixel value is 0 or 1,use for converting graycode to decimal 
 	Mat gray_temp(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC1, Scalar(0));	  //gray difference  between image and inverse image
-	sl_parameter.gray_valid_image.create(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC1);	//recoed valid pixels,use 'or','and'operation
+	sl_parameter.decode_colum_scan_image.setTo(0);
+	sl_parameter.decode_row_scan_image.setTo(0);
 	sl_parameter.gray_valid_image.setTo(0);
+	sl_parameter.scene_color.setTo(0);
 
 	//decode  gray code colum scan  
 	if (sl_parameter.colum_scan_flag)
 	{
 		cout << "decode graycode colum scan image......." << endl;
-		for (int i = 1; i <= sl_parameter.colum_scan_amount; ++i)
+		for (int i = 1; i <= sl_parameter.colum_scan_amount-1; ++i)
 		{
 			cvtColor(sl_parameter.camera_gray_code_image[2 * i], gray_code_image_gray, COLOR_RGB2GRAY);
 			cvtColor(sl_parameter.camera_gray_code_image[2 * i + 1], gray_code_inverse_image_gray, COLOR_RGB2GRAY);
@@ -543,7 +415,6 @@ int DecodeGrayCode(SlParameter &sl_parameter)
 		temp.setTo(0);  //pay attention to decode_colum_scan_image is CV_16U
 		sl_parameter.decode_colum_scan_image.copyTo(temp, sl_parameter.gray_valid_image);
 		temp.copyTo(sl_parameter.decode_colum_scan_image);
-		cout << "decode graycode colum scan image successful!" << endl;
 	}
 
 	//decode gray code row scan
@@ -580,19 +451,14 @@ int DecodeGrayCode(SlParameter &sl_parameter)
 		temp.setTo(0);  //pay attention to decode_colum_scan_image is CV_16U
 		sl_parameter.decode_row_scan_image.copyTo(temp, sl_parameter.gray_valid_image);
 		temp.copyTo(sl_parameter.decode_row_scan_image);
-		cout << "decode graycode row scan image successful!" << endl;
 	}
 
 	//choose which image as scene scene image
-	sl_parameter.scene_color.create(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC3);
-	sl_parameter.scene_color.setTo(0);
 	Mat temp1(sl_parameter.camera_height, sl_parameter.camera_width, CV_16UC3, Scalar(0));
 	temp1= (sl_parameter.camera_gray_code_image[0] + sl_parameter.camera_gray_code_image[1])/2;
 	sl_parameter.scene_color = temp1;
-	cout << endl;
 	return 0;
 }
-
 
 int DisplayDecodeResult(SlParameter &sl_parameter)
 {
@@ -642,13 +508,8 @@ int DisplayDecodeResult(SlParameter &sl_parameter)
 	return 0; 
 }
 
-
 int ReconstructDepthMap(SlParameter &sl_parameter, SlCalibration &sl_calibration)
 {
-	sl_parameter.depth_valid.create(sl_parameter.camera_height, sl_parameter.camera_width, CV_8UC1);
-	sl_parameter.depth_namate.create(sl_parameter.camera_height, sl_parameter.camera_width, CV_64FC1);
-	sl_parameter.depth_points.create(sl_parameter.camera_height,sl_parameter.camera_width, CV_64FC3);
-	sl_parameter.depth_colors.create(sl_parameter.camera_height,sl_parameter.camera_width, CV_64FC3);
 	sl_parameter.depth_valid.setTo(0);
 	sl_parameter.depth_namate.setTo(0.0f);
 	sl_parameter.depth_points.setTo(0.0f);
@@ -758,32 +619,47 @@ int ReconstructDepthMap(SlParameter &sl_parameter, SlCalibration &sl_calibration
 	return 0;
 }
 
-
 int RunStructuredLight(SlParameter &sl_parameter, SlCalibration &sl_calibration)
 {
+	clock_t clock_begin;
+	Mat depth_gray_temp;
 	cout << "Run structuredlight scan........" << endl<<endl;
-	//generate gray code 
-	GenerateGrayCode(sl_parameter);
 
-	//capture living image for adjusting object placement,camera_gain and projector_gain 
+//	GenerateGrayCode(sl_parameter);
+	ReadGrayCode(sl_parameter);
+
 //	CaptureLivingImage(sl_parameter);
 
-	//run scanning object
-	RunScanningObject(sl_parameter);
+	ostringstream save_name;
+	int i=0;
+	namedWindow("depth map", WINDOW_AUTOSIZE);
+	createTrackbar("capture delay:", "depth map", &sl_parameter.project_capture_delay, 500, NULL);
+	createTrackbar("contrast:", "depth map", &sl_parameter.contrast_threshold, 100, NULL);
+	while (1){
+		clock_begin = clock();
 
-	//Decode gray codes
-	DecodeGrayCode(sl_parameter);
+		RunScanObject(sl_parameter, true);
+		cout << endl;
+	//	ReadScanImage(sl_parameter);
 
-	//Display decode result
-	DisplayDecodeResult(sl_parameter);
+		DecodeGrayCode(sl_parameter);
 
-	//reconstruct depth map
-	ReconstructDepthMap(sl_parameter, sl_calibration);
+	//	DisplayDecodeResult(sl_parameter);
 
-	//save pointcloud as X3D File
-	char save_name[] = ".\\output\\test\\pointCloud.x3d";
-	SaveX3DFile(save_name, sl_parameter.depth_points, sl_parameter.depth_colors, sl_parameter.depth_valid);
+		//reconstruct depth map
+		ReconstructDepthMap(sl_parameter, sl_calibration);
+		
+		//save pointcloud as X3D File
+		//char save_name[] = ".\\output\\test\\pointCloud.x3d";
+		//	SaveX3DFile(save_name, sl_parameter.depth_points, sl_parameter.depth_colors, sl_parameter.depth_valid);
 
+		DepthMapConvertToGray(sl_parameter.depth_points, depth_gray_temp, sl_parameter.depth_valid,sl_parameter.distance_range[0],sl_parameter.distance_range[1]);
+		save_name.str("");
+		save_name << ".\\output\\test\\cup\\depth_map_" << i++ << ".jpg";
+		imwrite(string(save_name.str()), depth_gray_temp);
+		imshow("depth map", depth_gray_temp);
+		cout << clock() - clock_begin<<endl<<endl;
+	}
 	return 0;
 }
 

@@ -13,52 +13,54 @@ using namespace cv;
 class  SlParameter
 {
 	public:
+		SlParameter() = default;
+		SlParameter(int i);
 		//output directory
-		string output_directory;
-		string object_name;
-		bool save_enable;
+		string output_directory="./output";
+		string object_name="test";
+		bool save_enable=false;
 
 		//camera parameters
-		int camera_id;	
-		int camera_width;		//camera physical width 	
-		int camera_height;		//camera physical height
+		int camera_id=0;	
+		int camera_width=1024;		//camera physical width 	
+		int camera_height=768;		//camera physical height
 
 		//projector parameters
-		int projector_width;	 //projector physical width
-		int projector_height;	 //projector physical height
-		bool projector_invert;
+		int projector_width=1024;	 //projector physical width
+		int projector_height=768;	 //projector physical height
+		bool projector_invert=false;
 
 		//gain parameters
-		int camera_gain;		//0-0.00,100-1.00,200-2.00
-		int projector_gain;		//0-0.00,100-1.00,200-2.00
+		int camera_gain=100;		//0-0.00,100-1.00,200-2.00
+		int projector_gain=100;		//0-0.00,100-1.00,200-2.00
 
 		//define camera calibration chessboard parameters
 		Size camera_board_size;			//Number of inner corners per a chessboard row and column
 		Size camera_square_size;		//The size of a square(unit:mm)
-		int frame_amount;				//The number of frame to use for calibration
+		int frame_amount=10;				//The number of frame to use for calibration
 
 		//define projector calibration chessboard parameters
 		Size projector_board_size;			//Number of inner corners per a chessboard row and column
 		Size projector_square_size;			//The size of a square(unit:pixel)
 		Mat projector_background_pattern;	//use for projector background
 		Mat projector_chessboard_pattern;	//use for generate chessboard						
-		int projector_border_row;			//the i-th row where chessboard pattern start
-		int projector_border_colum;			//the j-th colum where chessboard pattern start
+		int projector_border_row=0;			//the i-th row where chessboard pattern start
+		int projector_border_colum=0;			//the j-th colum where chessboard pattern start
 
 		//scan flag and threshold 
-		bool colum_scan_flag;					//enable/disable column scanning
-		bool row_scan_flag;						//enable/disable row scanning
-		int project_capture_delay;				//frame delay between projection and image capture (in ms)
-		int contrast_threshold;					//minimum contrast threshold for decoding (maximum of 255)
-		float distance_range[2];				//{minimum, maximum} distance(from camera), otherwise point is rejected
-		float distance_reject;					// rejection distance (for outlier removal) if row and column scanning are both enabled (in mm)
-		float background_depth_threshold;		// threshold distance for background removal (in mm)	
+		bool colum_scan_flag=true;					//enable/disable column scanning
+		bool row_scan_flag=false;						//enable/disable row scanning
+		int project_capture_delay=300;				//frame delay between projection and image capture (in ms)
+		int contrast_threshold=50;					//minimum contrast threshold for decoding (maximum of 255)
+		float distance_range[2] ;				//{minimum, maximum} distance(from camera), otherwise point is rejected
+		float distance_reject=700;					// rejection distance (for outlier removal) if row and column scanning are both enabled (in mm)
+		float background_depth_threshold=20;		// threshold distance for background removal (in mm)	
 
 		//scan option
-		int colum_scan_amount;					//frames amout if use gray code colum scan
-		int row_scan_amount;					//frames amount if use gray code row scan
-		int colum_scan_shift;					//colum beginning of gray code colum scan 
-		int row_scan_shift;						//row beginning of gray code row scan
+		int colum_scan_amount=10;					//frames amout if use gray code colum scan
+		int row_scan_amount=0;					//frames amount if use gray code row scan
+		int colum_scan_shift=0;					//colum beginning of gray code colum scan 
+		int row_scan_shift=0;						//row beginning of gray code row scan
 		vector<Mat>projector_gray_code_image;	//use for saving gray code to project
 		vector<Mat>camera_gray_code_image;		//use for saving frames graped
 		Mat decode_colum_scan_image;			//1*M*N,use for saving colum scan decode
@@ -73,14 +75,13 @@ class  SlParameter
 		
 		Mat background_depth_namate;	 //1*M*N,decribe each point in parametric form 
 
-
 //	private:
-
 };
 
 class SlCalibration
 {
 	public:
+		SlCalibration(int i);
 		//camera calibration
 		Mat camera_intrinsic;		//output 3x3 floating-point camera matrix
 		Mat camera_distortion;		//output vector of distortion coefficients

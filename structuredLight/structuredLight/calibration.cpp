@@ -14,6 +14,56 @@ using namespace std;
 using namespace cv;
 
 //Run camera calibration
+
+int GenerateChessBoardPattern(SlParameter &sl_parameter)
+{
+	cout << "generate chessboard pattern......." << endl;
+	int row_index, colum_index;
+	int pixel_x, pixel_y;
+	sl_parameter.projector_chessboard_pattern = Mat::zeros(sl_parameter.projector_height, sl_parameter.projector_width, CV_8U);
+	sl_parameter.projector_chessboard_pattern.setTo(255);
+
+	//calculate starting colum and row
+	sl_parameter.projector_border_colum = (int)((sl_parameter.projector_width - (sl_parameter.projector_board_size.width + 1)*sl_parameter.projector_square_size.width) / 2);
+	sl_parameter.projector_border_row = (int)((sl_parameter.projector_height - (sl_parameter.projector_board_size.height + 1)*sl_parameter.projector_square_size.height) / 2);
+
+	if (sl_parameter.projector_border_colum < 0 || sl_parameter.projector_border_row < 0)
+	{
+		cout << "projector physical width and height:" << sl_parameter.projector_width << "X" << sl_parameter.projector_height << endl;
+		cerr << "can't generate " << (sl_parameter.projector_board_size.width + 1)*sl_parameter.projector_square_size.width << "X" <<
+			(sl_parameter.projector_board_size.height + 1)*sl_parameter.projector_square_size.height << "chessboard" << endl;
+		return -1;
+	}
+
+	//create odd black square
+	for (row_index = 0; row_index <sl_parameter.projector_board_size.height + 1; row_index += 2)
+	{
+		for (colum_index = 0; colum_index < sl_parameter.projector_board_size.width + 1; colum_index += 2)
+		{
+			for (pixel_y = 0; pixel_y < sl_parameter.projector_square_size.height; pixel_y++)
+			{
+				for (pixel_x = 0; pixel_x < sl_parameter.projector_square_size.width; pixel_x++)
+					sl_parameter.projector_chessboard_pattern.at<unsigned char>(pixel_y + row_index*sl_parameter.projector_square_size.height + sl_parameter.projector_border_row,
+					pixel_x + colum_index*sl_parameter.projector_square_size.width + 500) = 0;  //pay attention to where the chessboard start
+			}
+		}
+	}
+	//create even black square
+	for (row_index = 1; row_index < sl_parameter.projector_board_size.height; row_index += 2)
+	{
+		for (colum_index = 1; colum_index < sl_parameter.projector_board_size.width; colum_index += 2)
+		{
+			for (pixel_y = 0; pixel_y < sl_parameter.projector_square_size.height; pixel_y++)
+			{
+				for (pixel_x = 0; pixel_x < sl_parameter.projector_square_size.width; pixel_x++)
+					sl_parameter.projector_chessboard_pattern.at<unsigned char>(pixel_y + row_index*sl_parameter.projector_square_size.height + sl_parameter.projector_border_row,
+					pixel_x + colum_index*sl_parameter.projector_square_size.width + 500) = 0; //pay attention to where the chessboard start
+			}
+		}
+	}
+	cout << "generate chessboard pattern successful......." << endl;
+}
+
 int RunCameraCalibration(SlParameter &sl_parameter, SlCalibration &sl_calibration)
 {
 	//reset camera_intrinsic_calibration_flag
@@ -186,8 +236,6 @@ int RunCameraCalibration(SlParameter &sl_parameter, SlCalibration &sl_calibratio
 	destroyWindow("undistortion image");
 	return 0;
 }
-
-
 
 int RunProjectorCalibration(SlParameter &sl_parameter, SlCalibration &sl_calibration)
 {
@@ -592,8 +640,6 @@ int RunProjectorCalibration(SlParameter &sl_parameter, SlCalibration &sl_calibra
 	return 0;
 }
 
-
-
 int RunCameraProjectorExtrinsicCalibration(SlParameter &sl_parameter, SlCalibration &sl_calibration)
 {
 	//reset camera_projector_extrinsic_calibration flag;
@@ -910,7 +956,6 @@ int RunCameraProjectorExtrinsicCalibration(SlParameter &sl_parameter, SlCalibrat
 	return 0;
 }
 
-
 int EvaluteCameraProjectorGeometry(SlParameter &sl_parameter, SlCalibration &sl_calibration)
 {
 	cout << "evalute camera-projector geometry......" << endl;
@@ -1036,7 +1081,6 @@ int EvaluteCameraProjectorGeometry(SlParameter &sl_parameter, SlCalibration &sl_
 	cout << "evalute camera - projector geometry successful!" << endl << endl;
 	return 0;
 }
-
 
 // Fit a hyperplane to a set of ND points.
 // Note: Input points must be in the form of an NxM matrix, where M is the dimensionality.

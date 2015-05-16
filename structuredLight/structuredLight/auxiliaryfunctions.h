@@ -8,13 +8,11 @@
 using namespace std;
 using namespace cv;
 
-int Read_slparameter(SlParameter &sl_parameter, SlCalibration &sl_calibration);
 int GetImage(Mat &frame_grab);
 int CameraInitialize(SlParameter &sl_parameter);
 int ProjectorInitialize(SlParameter &sl_parameter);
-int GenerateChessBoardPattern(SlParameter &sl_parameter);
-int CreateOutputDirectory(SlParameter &sl_parameter);
-void Clear(void);
+
+void CameraClear(void);
 
 
 #endif

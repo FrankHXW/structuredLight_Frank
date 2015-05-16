@@ -95,6 +95,7 @@
     <ClCompile Include="phaseshift.cpp" />
     <ClCompile Include="scan.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="structuredlight.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="calibration.h" />
