@@ -38,6 +38,42 @@ void ColorizeWinter(Mat &src, Mat &dst, Mat &mask)
 	output[0].copyTo(dst);
 }
 
+
+//src:CV_64FC3,channel_3 is depth, dst:CV_8UC1, mask:CV_8UC1
+void DepthMapConvertToGray(const Mat &src, Mat &dst,const Mat &mask)
+{
+	const double *ptr_src = src.ptr<double>(0);
+	const unsigned char *ptr_mask = mask.ptr<unsigned char>(0);
+	dst.create(src.size(), CV_8UC1);
+	dst.setTo(0);
+	unsigned char *ptr_dst = dst.ptr<unsigned char>(0);
+	
+	double min = 100000, max = 0, sum=0.0f, average =0.0f,scale=0.0f; 
+	int step = src.cols,count=0;
+
+	for (int r = 0; r < src.rows - 1; ++r){
+		for (int c = 0; c <src.cols-1; c += 1){
+			if (ptr_mask[r*step + c] != 0){
+				if (ptr_src[r*step * 3 + 3 * c + 2] < min){min = ptr_src[r*step * 3 + 3 * c + 2];  }
+				else if (ptr_src[r*step * 3 + 3 * c + 2] > max){max = ptr_src[r*step * 3 + 3 * c + 2]; }
+				sum+= ptr_src[r*step * 3 + 3 * c + 2];
+				count++;
+			}
+		}
+	}
+	average = sum / count;
+	scale = 255.0f / 450.0f;
+	for (int r = 0; r < src.rows - 1; ++r){
+		for (int c = 0; c <src.cols - 1; c += 1){
+			if (ptr_mask[r*step + c] != 0){
+				ptr_dst[r*step + c] = (450-ptr_src[r*step * 3 + 3 * c + 2]) *scale;
+			}
+		}
+	}
+}
+
+
+
 // Find intersection between a 3D plane and a 3D line.
 // Note: Finds the point of intersection of a line in parametric form 
 //       P=Ql+namate*V; a plane W defined in implicit form: 
@@ -155,7 +191,8 @@ int GenerateGrayCode(SlParameter &sl_parameter)
 		sl_parameter.projector_gray_code_image.push_back(image_temp.clone());  //pay attention to clone()
 	sl_parameter.projector_gray_code_image[0].setTo(255);
 
-	key = waitKey();
+//	key = waitKey();
+	key = 'e';   //read graycode directly
 	if (key == 'o')	  //generate gray code image
 	{
 		//define colum scan image,saving at 1~colum_scan_amount
@@ -327,7 +364,8 @@ int RunScanningObject(SlParameter &sl_parameter)
 	namedWindow("scanning object", WINDOW_AUTOSIZE);
 	moveWindow("camera desired image", 20, 0);
 	imshow("projector window", sl_parameter.projector_gray_code_image[0]);
-	key = waitKey();
+//	key = waitKey();
+	key = 'e';   //scan object directly
 	if (key == 'o')
 	{
 		//enable colum scan 
@@ -411,7 +449,6 @@ int RunScanningObject(SlParameter &sl_parameter)
 			destroyWindow("scanning object");
 			cout << "object row scan successful!" << endl << endl;
 		}
-
 	}
 	
 	else if (key == 'e')

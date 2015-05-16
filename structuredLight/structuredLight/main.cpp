@@ -16,26 +16,26 @@ using namespace cv;
 
 clock_t clock_begin, clock_end;
 
-
 int main()
 {
 	SlParameter slparameter;
 	SlCalibration slcalibration;
+
 	//Read structuredlight setting parameters from structuredlight.xml
 	Read_slparameter(slparameter,slcalibration);
 
-	//Create output directory
+//	//Create output directory
 	CreateOutputDirectory(slparameter);
-
+//
 //	//Initialize projector
 	namedWindow("projector window", 0);
 	moveWindow("projector window", 1920, 0);
 	setWindowProperty("projector window", WND_PROP_FULLSCREEN, 1);
 	ProjectorInitialize(slparameter);
-
-	//Initialize camera
-	CameraInitialize(slparameter);
 //
+//	//Initialize camera
+//	CameraInitialize(slparameter);
+////
 //	//Run camera calibration
 ////	RunCameraCalibration(slparameter,slcalibration);
 //
@@ -47,7 +47,10 @@ int main()
 //
 	EvaluteCameraProjectorGeometry(slparameter, slcalibration);
 //	//Run structuredlight scan
-//	RunStructuredLight(slparameter,slcalibration);
+	RunStructuredLight(slparameter,slcalibration);
+
+	Mat temp;
+	DepthMapConvertToGray(slparameter.depth_points, temp, slparameter.depth_valid);
 
 
 	PhaseShift slphaseshift(PHASESHIFT_THREE, VERTICAL);
@@ -101,8 +104,11 @@ int main()
 	ReconstructDepthMap(slparameter,slcalibration);
 	cout << clock() - clock_begin << endl;
 
+	Mat temp1;
+	DepthMapConvertToGray(slparameter.depth_points, temp1, slphaseshift.three_unwrap_process);
+
 	clock_begin = clock();
-	char save_name[] = ".\\output\\test\\pointCloud.x3d";
+	char save_name[] = ".\\output\\phaseshift\\phaseshift_three\\vertical\\image\\pointCloud.x3d";
 	SaveX3DFile(save_name, slparameter.depth_points, slparameter.depth_colors, slparameter.depth_valid);
 	cout << clock() - clock_begin << endl;
 

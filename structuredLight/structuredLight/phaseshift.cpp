@@ -13,6 +13,7 @@
 
 #include "structuredlight.h"
 #include "auxiliaryfunctions.h"
+#include "scan.h"
 #include "phaseshift.h"
 
 using namespace std;

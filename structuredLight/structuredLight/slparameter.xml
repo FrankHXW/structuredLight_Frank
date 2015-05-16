@@ -41,10 +41,10 @@
 
 <scan_colums_flag>1</scan_colums_flag>
 <scan_rows_flag>0</scan_rows_flag>
-<project_capture_delay>500</project_capture_delay>
-<contrast_threshold>30</contrast_threshold>
+<project_capture_delay>300</project_capture_delay>
+<contrast_threshold>20</contrast_threshold>
 <distance_range_min>300</distance_range_min>
-<distance_range_max>500</distance_range_max>
+<distance_range_max>450</distance_range_max>
 <distance_reject>700</distance_reject>
 <background_depth_threshold>20</background_depth_threshold>
 

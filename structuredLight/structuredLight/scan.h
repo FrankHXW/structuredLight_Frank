@@ -3,6 +3,7 @@
 
 
 void ColorizeWinter(Mat &src, Mat &dst, Mat &mask);
+void DepthMapConvertToGray(const Mat &src, Mat &dst,const Mat &mask);
 int SaveX3DFile(char *filename, Mat &points, Mat &colors, Mat &mask);
 
 int GenerateGrayCode(SlParameter &sl_parameter);
