@@ -27,6 +27,9 @@ int main()
 	setWindowProperty("projector window", WND_PROP_FULLSCREEN, 1);
 	ProjectorInitialize(slparameter);
 //
+	GenerateGrayCode(slparameter);
+
+
 //	//Initialize camera
 	CameraInitialize(slparameter);
 ////

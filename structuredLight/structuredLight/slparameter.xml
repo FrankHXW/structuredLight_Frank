@@ -13,8 +13,8 @@
 </camera>
 
 <projector>
-  <width>1024</width>
-  <height>768</height>
+  <width>912</width>
+  <height>1140</height>
   <invert>0</invert>
   <period>96</period>
 </projector>

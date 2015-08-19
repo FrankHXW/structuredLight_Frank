@@ -181,13 +181,22 @@ int GenerateGrayCode(SlParameter &sl_parameter)
 			}
 		}
 	}
-	// save graycode
+	// save graycode and inverse graycode
+	Mat pattern_inverse(sl_parameter.projector_height, sl_parameter.projector_width, CV_8UC1,Scalar(0));
 	if (sl_parameter.colum_scan_flag){
 		for (int i = 0; i <= sl_parameter.colum_scan_amount; ++i){
 			save_name.str("");
 			save_name << ".\\output\\test\\projector_scan_image_" << i << ".jpg";
 			imwrite(string(save_name.str()), sl_parameter.projector_gray_code_image[i]);
 			imshow("projector window", sl_parameter.projector_gray_code_image[i]);
+			waitKey(sl_parameter.project_capture_delay / 2);
+
+			pattern_inverse.setTo(255);
+			pattern_inverse = pattern_inverse - sl_parameter.projector_gray_code_image[i];
+			save_name.str("");
+			save_name << ".\\output\\test\\projector_scan_image_inverse_" << i << ".jpg";
+			imwrite(string(save_name.str()), pattern_inverse);
+			imshow("projector window", pattern_inverse);
 			waitKey(sl_parameter.project_capture_delay / 2);
 		}
 	}
@@ -197,6 +206,14 @@ int GenerateGrayCode(SlParameter &sl_parameter)
 			save_name << ".\\output\\test\\projector_scan_image_" << i << ".jpg";
 			imwrite(string(save_name.str()), sl_parameter.projector_gray_code_image[i]);
 			imshow("projector window", sl_parameter.projector_gray_code_image[i]);
+			waitKey(sl_parameter.project_capture_delay / 2);
+
+			pattern_inverse.setTo(255);
+			pattern_inverse = pattern_inverse - sl_parameter.projector_gray_code_image[i];
+			save_name.str("");
+			save_name << ".\\output\\test\\projector_scan_image_inverse_" << i << ".jpg";
+			imwrite(string(save_name.str()), pattern_inverse);
+			imshow("projector window", pattern_inverse);
 			waitKey(sl_parameter.project_capture_delay / 2);
 		}
 	}
