@@ -22,16 +22,24 @@ int main()
 	SlCalibration slcalibration(1);
 
 //	//Initialize projector
-	namedWindow("projector window", 0);
-	moveWindow("projector window", 1920, 0);
-	setWindowProperty("projector window", WND_PROP_FULLSCREEN, 1);
-	ProjectorInitialize(slparameter);
+	//namedWindow("projector window", 0);
+	//moveWindow("projector window", 1920, 0);
+	//setWindowProperty("projector window", WND_PROP_FULLSCREEN, 1);
+	//ProjectorInitialize(slparameter);
 //
-	GenerateGrayCode(slparameter);
-
 
 //	//Initialize camera
 	CameraInitialize(slparameter);
+	Mat tmp(slparameter.camera_height, slparameter.camera_width, CV_8UC3, Scalar(0));
+	int count = 0;
+	while (1){
+		clock_begin = clock();
+		GetImage(tmp);
+//		imshow("camera", tmp);
+		waitKey(1);
+		cout << clock() - clock_begin<<" :"<<count++<<endl;
+		count %= 22;
+	}
 ////
 //	//Run camera calibration
 ////	RunCameraCalibration(slparameter,slcalibration);

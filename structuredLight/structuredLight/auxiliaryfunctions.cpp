@@ -11,9 +11,13 @@
 #include "auxiliaryfunctions.h"
 
 
+//#define USE_MV_UB500
+#define USE_UI_2220SE
+
 using namespace std;
 using namespace cv;
-//use mv-ub500 sdk api function
+
+#ifdef USE_MV_UB500	//use mv-ub500 sdk api function
 #include <process.h>
 #include "windows.h"
 #pragma comment(lib,"..\\structuredLight\\MVCAMSDK.lib")
@@ -29,34 +33,25 @@ BYTE*			PbyBuffer;			//指向原始图像数据的缓冲区指针
 BYTE*           FrameBuffer;		//将原始图像数据转换为RGB图像的缓冲区
 IplImage *iplImage = NULL;
 
-//注意相机输出的是上一次触发捕获指令缓存的图像
-int GetImage(Mat &frame_grab)
-{
-	clock_t clock_begin;
-	clock_begin = clock();
-	if (CameraGetImageBuffer(m_hCamera, &FrameInfo, &PbyBuffer, 200) == CAMERA_STATUS_SUCCESS)
-	{
-		////将获得的原始数据转换成RGB格式的数据，同时经过ISP模块，对图像进行降噪，边沿提升，颜色校正等处理。
-		camera_sdk_status = CameraImageProcess(m_hCamera, PbyBuffer, FrameBuffer, &FrameInfo);//连续模式
-		if (camera_sdk_status == CAMERA_STATUS_SUCCESS)
-		{
-			//转换数据并显示
-			iplImage = cvCreateImageHeader(cvSize(FrameInfo.iWidth, FrameInfo.iHeight), IPL_DEPTH_8U, 3);
-			cvSetData(iplImage, FrameBuffer, FrameInfo.iWidth * 3);
-			//cvShowImage("camera", iplImage);
-			Mat frame_temp(iplImage, true);
-			frame_grab=frame_temp.clone();
-		}
-		//在成功调用CameraGetImageBuffer后，必须调用CameraReleaseImageBuffer来释放获得的buffer。
-		CameraReleaseImageBuffer(m_hCamera, PbyBuffer);
-		cvReleaseImageHeader(&iplImage);
-		cout << clock() - clock_begin <<" ";
-		return -1;
-	}
-	else
-		return 0;
-	
-}
+
+#elif defined(USE_UI_2220SE)	//use UI-2220SE camera sdk api function
+#include "uEye.h"
+HIDS hCam = 1;		//camera handle
+SENSORINFO SensorInfo;
+CAMINFO CameraInfo;
+INT colorMode = IS_CM_BGR8_PACKED;
+UINT pixelClock = 30; //MHz
+double frameRate = 52;  //fps
+double exposureTime = 8.0; //ms
+INT  masterGain = 20;  //0-100
+INT redGain = 5, greenGain = 0, blueGain = 60; //0-100
+INT gamma = 160; //multipe by 100
+INT triggerMode = IS_SET_TRIGGER_SOFTWARE; // IS_SET_TRIGGER_LO_HI;
+INT triggerDelay = 0;
+char *imageAddress = NULL;
+INT memoryId = 0;
+#endif
+
 
 //Initialize camera
 int CameraInitialize(SlParameter &sl_parameter)
@@ -96,6 +91,7 @@ int CameraInitialize(SlParameter &sl_parameter)
 //		cout << "-------------------------------------------------------" << endl << endl;
 //	}
 
+#ifdef USE_MV_UB500		//use mv-ub500 sdk api function
 	//use industry camera mv ub500
 	Mat frame_grab;
 	//相机SDK初始化
@@ -135,13 +131,148 @@ int CameraInitialize(SlParameter &sl_parameter)
 	else
 		cout << "Camera initializa failed......" << endl<<endl;
 //	destroyWindow("camera initialize");
-	
 	return 0;
+
+#elif defined(USE_UI_2220SE)	//use UI-2220SE camera sdk api function
+	
+	INT nRet = is_InitCamera(&hCam, NULL);
+	if (nRet == IS_SUCCESS){
+		cout << "camera UI_2220SE init success!" << endl;
+
+		//query and display information about sensor and camera
+		is_GetSensorInfo(hCam, &SensorInfo);
+		is_GetCameraInfo(hCam, &CameraInfo);
+		
+		nRet = is_SetColorMode(hCam, colorMode);
+		if (nRet != IS_SUCCESS){
+			cout << "set color mode at" << colorMode << "failed;error code:" << nRet << endl;
+		}
+
+		//setting parameters,closing all automatic function firstly
+		double auto_parameter1 = 0, auto_parameter2 = 0;
+
+		nRet=is_PixelClock(hCam, IS_PIXELCLOCK_CMD_SET, (void*)&pixelClock, sizeof(pixelClock));
+		if (nRet != IS_SUCCESS){
+			cout << "set pixelclock at " << pixelClock << "MHz failed;error code:" << nRet << endl;
+			return 0;
+		}
+
+		is_SetAutoParameter(hCam, IS_SET_ENABLE_AUTO_SENSOR_FRAMERATE, &auto_parameter1, &auto_parameter2);
+		nRet=is_SetFrameRate(hCam, frameRate, &frameRate);
+		if (nRet != IS_SUCCESS){
+			cout << "set framerate at " << frameRate << "fps failed;error code:" << nRet << endl;
+			return 0;
+		}
+
+		is_SetAutoParameter(hCam, IS_SET_ENABLE_AUTO_SENSOR_GAIN_SHUTTER, &auto_parameter1, &auto_parameter2);
+		nRet = is_Exposure(hCam, IS_EXPOSURE_CMD_SET_EXPOSURE, &exposureTime, 8);
+		if (nRet != IS_SUCCESS){
+			cout << "set exposuretime at " << exposureTime << "ms failed;error code:" << nRet << endl;
+			return 0;
+		}
+
+
+
+
+		is_SetAutoParameter(hCam, IS_SET_ENABLE_AUTO_SENSOR_GAIN, &auto_parameter1, &auto_parameter2);
+		is_SetGainBoost(hCam, IS_SET_GAINBOOST_ON);
+		nRet=is_SetHardwareGain(hCam, masterGain, redGain, greenGain, blueGain);
+		if (nRet != IS_SUCCESS){
+			cout << "set hardware gain failed;error code:" << nRet << endl;
+			return 0;
+		}
+
+		is_SetHardwareGamma(hCam, IS_SET_HW_GAMMA_ON);
+		nRet = is_Gamma(hCam, IS_GAMMA_CMD_SET, &gamma, sizeof(gamma));
+		if (nRet != IS_SUCCESS){
+			cout << "set hardware gamma failed;error code:" << nRet << endl;
+			return 0;
+		}
+
+//		is_SetTriggerDelay(hCam, triggerDelay);
+		nRet = is_SetExternalTrigger(hCam, triggerMode);
+		if (nRet != IS_SUCCESS){
+			cout << "set external trigger at " << triggerMode << "failed;error code:" << nRet << endl;
+			return 0;
+		}
+
+		// Set the flash to a high active pulse for each image in the trigger mode
+		INT nMode = IO_FLASH_MODE_TRIGGER_HI_ACTIVE;
+		nRet = is_IO(hCam, IS_IO_CMD_FLASH_SET_MODE, (void*)&nMode, sizeof(nMode));
+
+		IO_FLASH_PARAMS flashParams;
+		flashParams.s32Delay = 0;
+		flashParams.u32Duration = 5000;
+		nRet = is_IO(hCam, IS_IO_CMD_FLASH_SET_PARAMS, (void*)&flashParams, sizeof(flashParams));
+
+
+
+		nRet=is_AllocImageMem(hCam, sl_parameter.camera_width, sl_parameter.camera_height, 24, &imageAddress, &memoryId);
+		if (nRet == IS_SUCCESS){
+			nRet = is_SetImageMem(hCam, imageAddress, memoryId);
+			if (nRet != IS_SUCCESS){
+				cout << "allocate memory failed;error code:" << nRet << endl;
+				return 0;
+			}
+		}
+
+		return -1;
+	}
+	else{
+		cout << "Init camera UI-2220SE failed;error code:" << nRet<< endl;
+		return 0;
+	}
+#endif
+	
+}
+
+int GetImage(Mat &frame_grab)
+{
+#ifdef USE_MV_UB500		//use mv-ub500 sdk api function
+	clock_t clock_begin;
+	clock_begin = clock();
+	//注意相机输出的是上一次触发捕获指令缓存的图像
+	if (CameraGetImageBuffer(m_hCamera, &FrameInfo, &PbyBuffer, 200) == CAMERA_STATUS_SUCCESS)
+	{
+		////将获得的原始数据转换成RGB格式的数据，同时经过ISP模块，对图像进行降噪，边沿提升，颜色校正等处理。
+		camera_sdk_status = CameraImageProcess(m_hCamera, PbyBuffer, FrameBuffer, &FrameInfo);//连续模式
+		if (camera_sdk_status == CAMERA_STATUS_SUCCESS)
+		{
+			//转换数据并显示
+			iplImage = cvCreateImageHeader(cvSize(FrameInfo.iWidth, FrameInfo.iHeight), IPL_DEPTH_8U, 3);
+			cvSetData(iplImage, FrameBuffer, FrameInfo.iWidth * 3);
+			//cvShowImage("camera", iplImage);
+			Mat frame_temp(iplImage, true);
+			frame_grab = frame_temp.clone();
+		}
+		//在成功调用CameraGetImageBuffer后，必须调用CameraReleaseImageBuffer来释放获得的buffer。
+		CameraReleaseImageBuffer(m_hCamera, PbyBuffer);
+		cvReleaseImageHeader(&iplImage);
+		cout << clock() - clock_begin << " ";
+		return -1;
+	}
+	else
+		return 0;
+#elif defined(USE_UI_2220SE) 	//use UI-2220SE camera sdk api function
+	clock_t clock_begin;
+	clock_begin = clock();
+	is_FreezeVideo(hCam, IS_WAIT);
+	cout << clock() - clock_begin << " ";
+
+	frame_grab.data = (unsigned char *)imageAddress;
+	return 0;
+#endif
+
 }
 
 void CameraClear(void)
 {
+#ifdef USE_MV_UB500		//use mv-ub500 sdk api function
 	CameraUnInit(m_hCamera);
+
+#elif defined(USE_UI_2220SE)	//use UI-2220SE camera sdk api function
+
+#endif
 }
 
 //Initialize projector
