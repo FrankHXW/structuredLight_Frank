@@ -15,12 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="auxiliaryfunctions.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="camera_calibration.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="calibration.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -36,12 +30,21 @@
     <ClCompile Include="structuredlight.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="DLP4500_API.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="usb.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="projector.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="structuredlight.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="auxiliaryfunctions.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="calibration.h">
@@ -51,6 +54,21 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="phaseshift.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="usb.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DLP4500_API.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="projector.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

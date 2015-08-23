@@ -8,7 +8,8 @@
 
 #include "structuredlight.h"
 #include "calibration.h"
-#include "auxiliaryfunctions.h"
+#include "camera.h"
+#include "projector.h"
 
 using namespace std;
 using namespace cv;

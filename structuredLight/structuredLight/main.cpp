@@ -9,7 +9,8 @@ using namespace std;
 using namespace cv;
 
 #include "structuredlight.h"
-#include "auxiliaryfunctions.h"
+#include "camera.h"
+#include "projector.h"
 #include "calibration.h"
 #include "scan.h"
 #include "phaseshift.h"
@@ -25,7 +26,7 @@ int main()
 	//namedWindow("projector window", 0);
 	//moveWindow("projector window", 1920, 0);
 	//setWindowProperty("projector window", WND_PROP_FULLSCREEN, 1);
-	//ProjectorInitialize(slparameter);
+	ProjectorInitialize(slparameter);
 //
 
 //	//Initialize camera
@@ -35,7 +36,7 @@ int main()
 	while (1){
 		clock_begin = clock();
 		GetImage(tmp);
-//		imshow("camera", tmp);
+		imshow("camera", tmp);
 		waitKey(1);
 		cout << clock() - clock_begin<<" :"<<count++<<endl;
 		count %= 22;

@@ -8,7 +8,7 @@
 #include <time.h>
 
 #include "structuredlight.h"
-#include "auxiliaryfunctions.h"
+#include "camera.h"
 
 
 //#define USE_MV_UB500
@@ -43,11 +43,12 @@ INT colorMode = IS_CM_BGR8_PACKED;
 UINT pixelClock = 30; //MHz
 double frameRate = 52;  //fps
 double exposureTime = 8.0; //ms
-INT  masterGain = 20;  //0-100
+INT  masterGain = 0;  //0-100
 INT redGain = 5, greenGain = 0, blueGain = 60; //0-100
 INT gamma = 160; //multipe by 100
 INT triggerMode = IS_SET_TRIGGER_SOFTWARE; // IS_SET_TRIGGER_LO_HI;
 INT triggerDelay = 0;
+INT flashMode = IO_FLASH_MODE_TRIGGER_LO_ACTIVE;	//pay attention to that real output is inverse
 char *imageAddress = NULL;
 INT memoryId = 0;
 #endif
@@ -171,9 +172,6 @@ int CameraInitialize(SlParameter &sl_parameter)
 			return 0;
 		}
 
-
-
-
 		is_SetAutoParameter(hCam, IS_SET_ENABLE_AUTO_SENSOR_GAIN, &auto_parameter1, &auto_parameter2);
 		is_SetGainBoost(hCam, IS_SET_GAINBOOST_ON);
 		nRet=is_SetHardwareGain(hCam, masterGain, redGain, greenGain, blueGain);
@@ -196,16 +194,16 @@ int CameraInitialize(SlParameter &sl_parameter)
 			return 0;
 		}
 
-		// Set the flash to a high active pulse for each image in the trigger mode
-		INT nMode = IO_FLASH_MODE_TRIGGER_HI_ACTIVE;
-		nRet = is_IO(hCam, IS_IO_CMD_FLASH_SET_MODE, (void*)&nMode, sizeof(nMode));
-
+		//must set trigger firstly
 		IO_FLASH_PARAMS flashParams;
-		flashParams.s32Delay = 0;
-		flashParams.u32Duration = 5000;
+		flashParams.s32Delay = 0;	   //delay after explosure start(us)
+		flashParams.u32Duration = 0;   //flash voltage level duration(us),0=explosure time
+		is_IO(hCam, IS_IO_CMD_FLASH_SET_MODE, (void*)&flashMode, sizeof(flashMode));
 		nRet = is_IO(hCam, IS_IO_CMD_FLASH_SET_PARAMS, (void*)&flashParams, sizeof(flashParams));
-
-
+		if (nRet != IS_SUCCESS){
+			cout << "set flash mode failed;error code:" << nRet << endl;
+			return 0;
+		}
 
 		nRet=is_AllocImageMem(hCam, sl_parameter.camera_width, sl_parameter.camera_height, 24, &imageAddress, &memoryId);
 		if (nRet == IS_SUCCESS){
@@ -271,21 +269,11 @@ void CameraClear(void)
 	CameraUnInit(m_hCamera);
 
 #elif defined(USE_UI_2220SE)	//use UI-2220SE camera sdk api function
-
+	is_ExitCamera (hCam);
 #endif
 }
 
-//Initialize projector
-int ProjectorInitialize(SlParameter &sl_parameter)
-{
-	//show full white projector background pattern
-	sl_parameter.projector_background_pattern = Mat::zeros(sl_parameter.projector_height, sl_parameter.projector_width, CV_8U);
-	sl_parameter.projector_background_pattern.setTo(255);
-	imshow("projector window", sl_parameter.projector_background_pattern);
-	waitKey(1000);
-	cout << "projector initialize successful......" << endl << endl;
-	return 0;
-}
+
 
 
 

@@ -12,7 +12,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include "structuredlight.h"
-#include "auxiliaryfunctions.h"
+#include "camera.h"
+#include "projector.h"
 #include "scan.h"
 #include "phaseshift.h"
 

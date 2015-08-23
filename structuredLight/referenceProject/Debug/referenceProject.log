@@ -1,0 +1,179 @@
+﻿生成启动时间为 2015/8/23 17:28:11。
+     1>项目“E:\桌面\毕业设计\Workspace\structuredLight\referenceProject\referenceProject.vcxproj”在节点 3 上(Rebuild 个目标)。
+     1>ClCompile:
+         D:\Program Files (x86)\VS2013\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt "..\..\..\OpenSource Project\SL_ThreePhaseShift\camTest.cpp" "..\..\..\OpenSource Project\SL_ThreePhaseShift\point_cloud.cpp" "..\..\..\OpenSource Project\SL_ThreePhaseShift\ThreeStepTest.cpp" "..\..\..\OpenSource Project\SL_ThreePhaseShift\three_step_phase_shift.cpp"
+         three_step_phase_shift.cpp
+     1>e:\桌面\毕业设计\opensource project\sl_threephaseshift\three_step_phase_shift.h(2): fatal error C1083: 无法打开包括文件: “cv.h”: No such file or directory
+         ThreeStepTest.cpp
+     1>e:\桌面\毕业设计\opensource project\sl_threephaseshift\three_step_phase_shift.h(2): fatal error C1083: 无法打开包括文件: “cv.h”: No such file or directory
+         point_cloud.cpp
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157): error C2146: 语法错误: 缺少“;”(在标识符“glAccum”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1158): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1158): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1158): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1158): error C2146: 语法错误: 缺少“;”(在标识符“glAlphaFunc”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1158): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1158): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1159): error C2146: 语法错误: 缺少“;”(在标识符“GLboolean”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1159): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1159): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1159): error C2146: 语法错误: 缺少“;”(在标识符“glAreTexturesResident”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1159): error C2371: “APIENTRY”: 重定义；不同的基类型
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1160): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1160): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1160): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1160): error C2146: 语法错误: 缺少“;”(在标识符“glArrayElement”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1160): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1160): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1161): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1161): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1161): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1161): error C2146: 语法错误: 缺少“;”(在标识符“glBegin”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1161): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1161): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1162): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1162): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1162): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1162): error C2146: 语法错误: 缺少“;”(在标识符“glBindTexture”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1162): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1162): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1163): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1163): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1163): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1163): error C2146: 语法错误: 缺少“;”(在标识符“glBitmap”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1163): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1163): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1164): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1164): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1164): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1164): error C2146: 语法错误: 缺少“;”(在标识符“glBlendFunc”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1164): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1164): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1165): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1165): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1165): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1165): error C2146: 语法错误: 缺少“;”(在标识符“glCallList”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1165): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1165): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1166): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1166): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1166): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1166): error C2146: 语法错误: 缺少“;”(在标识符“glCallLists”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1166): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1166): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1167): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1167): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1167): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1167): error C2146: 语法错误: 缺少“;”(在标识符“glClear”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1167): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1167): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1168): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1168): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1168): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1168): error C2146: 语法错误: 缺少“;”(在标识符“glClearAccum”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1168): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1168): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1169): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1169): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1169): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1169): error C2146: 语法错误: 缺少“;”(在标识符“glClearColor”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1169): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1169): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1170): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1170): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1170): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1170): error C2146: 语法错误: 缺少“;”(在标识符“glClearDepth”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1170): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1170): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1171): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1171): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1171): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1171): error C2146: 语法错误: 缺少“;”(在标识符“glClearIndex”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1171): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1171): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1172): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1172): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1172): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1172): error C2146: 语法错误: 缺少“;”(在标识符“glClearStencil”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1172): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1172): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1173): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1173): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1173): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1173): error C2146: 语法错误: 缺少“;”(在标识符“glClipPlane”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1173): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1173): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1174): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1174): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1174): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1174): error C2146: 语法错误: 缺少“;”(在标识符“glColor3b”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1174): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1174): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1175): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1175): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1175): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1175): error C2146: 语法错误: 缺少“;”(在标识符“glColor3bv”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1175): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1175): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1176): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1176): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1176): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1176): error C2146: 语法错误: 缺少“;”(在标识符“glColor3d”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1176): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1176): error C2086: “int APIENTRY”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“APIENTRY”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1177): error C2144: 语法错误:“void”的前面应有“;”
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1177): error C4430: 缺少类型说明符 - 假定为 int。注意:  C++ 不支持默认 int
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1177): error C2086: “int WINGDIAPI”: 重定义
+                 c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1157) : 参见“WINGDIAPI”的声明
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1177): error C2146: 语法错误: 缺少“;”(在标识符“glColor3dv”的前面)
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1177): error C2182: “APIENTRY”: 非法使用“void”类型
+     1>c:\program files (x86)\windows kits\8.1\include\um\gl\gl.h(1177): fatal error C1003: 错误计数超过 100；正在停止编译
+         camTest.cpp
+     1>e:\桌面\毕业设计\opensource project\sl_threephaseshift\camtest.cpp(1): fatal error C1083: 无法打开包括文件: “highgui.h”: No such file or directory
+         正在生成代码...
+     1>已完成生成项目“E:\桌面\毕业设计\Workspace\structuredLight\referenceProject\referenceProject.vcxproj”(Rebuild 个目标)的操作 - 失败。
+
+生成失败。
+
+已用时间 00:00:01.31

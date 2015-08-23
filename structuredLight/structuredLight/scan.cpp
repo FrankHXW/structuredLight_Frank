@@ -9,7 +9,8 @@
 #include <time.h>
 
 #include "structuredlight.h"
-#include "auxiliaryfunctions.h"
+#include "camera.h"
+#include "projector.h"
 #include "phaseshift.h"
 #include "scan.h"
 
