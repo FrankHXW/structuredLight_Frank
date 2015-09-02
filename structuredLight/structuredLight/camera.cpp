@@ -12,7 +12,9 @@
 
 
 //#define USE_MV_UB500
-#define USE_UI_2220SE
+//#define USE_UI_2220SE
+//#define USE_CANON_400D
+
 
 using namespace std;
 using namespace cv;
@@ -20,7 +22,7 @@ using namespace cv;
 #ifdef USE_MV_UB500	//use mv-ub500 sdk api function
 #include <process.h>
 #include "windows.h"
-#pragma comment(lib,"..\\structuredLight\\MVCAMSDK.lib")
+#pragma comment(lib,"..\\structuredLight\\lib\\MVCAMSDK.lib")
 #include "CameraApi.h"
 
 CameraSdkStatus camera_sdk_status;	//Ïà»ú×´Ì¬
@@ -44,13 +46,20 @@ UINT pixelClock = 30; //MHz
 double frameRate = 52;  //fps
 double exposureTime = 8.0; //ms
 INT  masterGain = 0;  //0-100
-INT redGain = 5, greenGain = 0, blueGain = 60; //0-100
+INT redGain = 0, greenGain = 0, blueGain = 0; //0-100
 INT gamma = 160; //multipe by 100
 INT triggerMode = IS_SET_TRIGGER_SOFTWARE; // IS_SET_TRIGGER_LO_HI;
 INT triggerDelay = 0;
 INT flashMode = IO_FLASH_MODE_TRIGGER_LO_ACTIVE;	//pay attention to that real output is inverse
 char *imageAddress = NULL;
 INT memoryId = 0;
+
+
+
+#elif defined(USE_CANON_400D)
+
+
+
 #endif
 
 
@@ -252,12 +261,8 @@ int GetImage(Mat &frame_grab)
 	else
 		return 0;
 #elif defined(USE_UI_2220SE) 	//use UI-2220SE camera sdk api function
-	clock_t clock_begin;
-	clock_begin = clock();
 	is_FreezeVideo(hCam, IS_WAIT);
-	cout << clock() - clock_begin << " ";
-
-	frame_grab.data = (unsigned char *)imageAddress;
+	frame_grab.data = (unsigned char *)imageAddress;	//pay attenion to this,there is no new allocated data
 	return 0;
 #endif
 

@@ -11,6 +11,7 @@ using namespace cv;
 #include "structuredlight.h"
 #include "camera.h"
 #include "projector.h"
+#include "DLP4500_API.h"
 #include "calibration.h"
 #include "scan.h"
 #include "phaseshift.h"
@@ -27,21 +28,34 @@ int main()
 	//moveWindow("projector window", 1920, 0);
 	//setWindowProperty("projector window", WND_PROP_FULLSCREEN, 1);
 	ProjectorInitialize(slparameter);
-//
+
 
 //	//Initialize camera
 	CameraInitialize(slparameter);
 	Mat tmp(slparameter.camera_height, slparameter.camera_width, CV_8UC3, Scalar(0));
-	int count = 0;
+	vector<Mat> imageCaptured(22);
+	for (int i = 0; i < 22; ++i)
+		imageCaptured[i]=Mat(slparameter.camera_height, slparameter.camera_width, CV_8UC3, Scalar(0));
 	while (1){
+		if(LCR_PatternDisplay(2)>=0)			//Start Pattern Display Sequence
+			for (unsigned int i = 6000000; i > 0; i--);	//there must be an delay >10ms
+
+		unsigned int step = tmp.cols*tmp.rows;
+		for (int i = 0; i < 22; ++i){
+			clock_begin = clock();
+			GetImage(tmp);
+			unsigned char *ptr_src = tmp.ptr <unsigned char>(0);
+			unsigned char *ptr_dst = imageCaptured[i].ptr<unsigned char>(0);
+			for (int i = 0; i < 3 * step; ++i)
+				ptr_dst[i] = ptr_src[i];
+			cout << clock() - clock_begin << " :" <<i<< endl;
+		}
 		clock_begin = clock();
-		GetImage(tmp);
-		imshow("camera", tmp);
-		waitKey(1);
-		cout << clock() - clock_begin<<" :"<<count++<<endl;
-		count %= 22;
+//		if(LCR_PatternDisplay(0)>=0)			//Stop Pattern Display Sequence
+//			for (unsigned int i = 80000000; i > 0; i--);	//there must be an delay >10ms
+		cout << clock() - clock_begin << endl;
 	}
-////
+
 //	//Run camera calibration
 ////	RunCameraCalibration(slparameter,slcalibration);
 //
@@ -57,7 +71,6 @@ int main()
 
 	Mat temp;
 	DepthMapConvertToGray(slparameter.depth_points, temp, slparameter.depth_valid, slparameter.distance_range[0], slparameter.distance_range[1]);
-
 
 	PhaseShift slphaseshift(PHASESHIFT_THREE, VERTICAL);
 	slphaseshift.GeneratePhaseShiftPattern();
