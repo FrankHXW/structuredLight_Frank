@@ -56,19 +56,22 @@
     <ClInclude Include="phaseshift.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="usb.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Common.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="DLP4500_API.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="projector.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DLP4500\Common.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DLP4500\DLP4500_API.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DLP4500\usb.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EDSDK\EDSDK.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

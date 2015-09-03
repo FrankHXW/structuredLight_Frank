@@ -13,7 +13,7 @@
 
 //#define USE_MV_UB500
 //#define USE_UI_2220SE
-//#define USE_CANON_400D
+#define USE_CANON_400D
 
 
 using namespace std;
@@ -57,7 +57,29 @@ INT memoryId = 0;
 
 
 #elif defined(USE_CANON_400D)
+#include "EDSDK.h"
+#include "EDSDKTypes.h"
+#include "EDSDKErrors.h"
 
+EdsCameraRef canonCamera;
+EdsPropertyID canonPropertyID;
+
+EdsPropertyDesc propertyModifiable;
+
+//following shooting-related properties are all EdsUInt32 
+EdsUInt32 edsAEMode = 0;			//Shooting mode: 0-P, 1-Tv, 2-Av, 3-M,
+EdsUInt32 edsDriveMode = 0x0;		//Drive mode: 0x0-single frame shooting, 0x1-continuous shooting
+EdsUInt32 edsISOSpeed = 0x48;		//ISO speed: 0x48-ISO100, 0x50-ISO200, 0x58-ISO400, 0x60-ISO800, 0x68-ISO1600
+EdsUInt32 edsMeteringMode = 3;		//Metering mode: 3-Evaluative, 4-Parital, 5-Center weighted
+EdsUInt32 edsAFMode = 0;			//AFMode: 0-One-Shot, 1-AI-Servo, 2-AI-Focus, 3-Manual
+EdsUInt32 edsApertureValue = 0x2d;	//Aperture value: 0x25-3.5, 0x28-4, 0x2B-4.5, 0x2D-5.0, 0x30-5.6, 0x33-6.3, 0x35-7.1
+EdsUInt32 edsShutterValue = 0x5d;	//Shutter speed: 0x4b-1/5, 0x4d-1/6, 0x50-1/8, 0x53-1/10, 0x58-1/15, 0x5b-20, 0x5d-1/25, 0x60-1/30, 0x63-1/40, 0x64-1/45, 0x65-1/50   
+EdsUInt32 edsExposureCompensation = 0x0;	//Exposure compensation: 0x10-2,0x08-1, 0x0-0, 0xf8--1, 0xf0--2
+EdsUInt32 edsFlashCompensation = 0x0;		//Flash compensation: 0x10-2,0x08-1, 0x0-0, 0xf8--1, 0xf0--2
+
+//following Image Properties are all EdsUInt32
+EdsUInt32 edsImageQuality = 0x02130f0f;		//Image quality: 0x02130f0f-small, 0x01130f0f-medium, 0x00130f0f-large
+EdsUInt32 edsWhiteBalance = 0;				//White balance: 0-AWB, 1-daylight, 2-cloudy, 3-tungsten, 4-fluorscent, 5-flash 
 
 
 #endif
@@ -229,8 +251,139 @@ int CameraInitialize(SlParameter &sl_parameter)
 		cout << "Init camera UI-2220SE failed;error code:" << nRet<< endl;
 		return 0;
 	}
+
+#elif defined(USE_CANON_400D)
+	EdsError	 error = EDS_ERR_OK;
+	EdsCameraListRef cameraList = NULL;
+	EdsUInt32	 count = 0;
+	bool		 isSDKLoaded = false;
+
+	// Initialization of SDK
+	error = EdsInitializeSDK();
+	if (error == EDS_ERR_OK){
+		isSDKLoaded = true;
+	}
+	//Acquisition of camera list
+	if (error== EDS_ERR_OK){
+		error = EdsGetCameraList(&cameraList);
+	}
+	//Acquisition of number of Cameras
+	if (error == EDS_ERR_OK){
+		error = EdsGetChildCount(cameraList, &count);
+		if (count == 0){
+			error = EDS_ERR_DEVICE_NOT_FOUND;
+		}
+	}
+	//Acquisition of camera at the head of the list
+	if (error == EDS_ERR_OK){
+		error = EdsGetChildAtIndex(cameraList, 0, &canonCamera);
+	}
+	//Acquisition of camera information
+	EdsDeviceInfo deviceInfo;
+	if (error == EDS_ERR_OK){
+		error = EdsGetDeviceInfo(canonCamera, &deviceInfo);
+		if (error == EDS_ERR_OK && canonCamera == NULL){
+			error = EDS_ERR_DEVICE_NOT_FOUND;
+		}
+	}
+	else
+		cout << "Cannot detect camera" << endl;
+	//Release camera list
+	if (cameraList != NULL){
+		EdsRelease(cameraList);
+	}
+
+	//The communication with the camera begins
+	error=EdsOpenSession(canonCamera);
+	EdsDataType	dataType = kEdsDataType_Unknown;
+	EdsUInt32   dataSize = 0;
+	EdsUInt32 data=0;
+
+	//get the AEMode and remind user to set the mode 
+	error=EdsGetPropertyData(canonCamera, kEdsPropID_AEMode, 0, sizeof(edsAEMode), &edsAEMode);
+	if (error == EDS_ERR_OK){
+		if (edsAEMode != 3){		//current AEMode is not manual exposure
+			cout << "please set canon camera to manual mode!" << endl;
+			return -1;
+		}
+	}
+	//set the Drive mode
+	EdsGetPropertyDesc(canonCamera, kEdsPropID_DriveMode, &propertyModifiable);
+	error = EdsSetPropertyData(canonCamera, kEdsPropID_DriveMode, 0, sizeof(edsDriveMode), &edsDriveMode);
+	if (error == !EDS_ERR_OK){
+		cout << "set Drive mode at " << edsDriveMode << "failed" << endl;
+		return -1;
+	}
+	//set the ISOSpeed 
+	EdsGetPropertyDesc(canonCamera, kEdsPropID_ISOSpeed, &propertyModifiable);
+	error = EdsSetPropertyData(canonCamera, kEdsPropID_ISOSpeed, 0, sizeof(edsISOSpeed), &edsISOSpeed);
+	if (error == !EDS_ERR_OK){
+		cout << "set ISOSpeed at " << edsISOSpeed << "failed" << endl;
+		return -1;
+	}
+	//set the MeteringMode 
+	EdsGetPropertyDesc(canonCamera, kEdsPropID_MeteringMode, &propertyModifiable);
+	error = EdsGetPropertyData(canonCamera, kEdsPropID_MeteringMode, 0, sizeof(edsMeteringMode), &edsMeteringMode);
+	if (error == !EDS_ERR_OK){
+		cout << "set MeteringMode at " << edsMeteringMode << "failed" << endl;
+		return -1;
+	}
+	//set the AFMode 
+	EdsGetPropertyDesc(canonCamera, kEdsPropID_AFMode, &propertyModifiable);
+	error = EdsGetPropertyData(canonCamera, kEdsPropID_AFMode, 0, sizeof(edsAFMode), &edsAFMode);
+	if (error == EDS_ERR_OK){
+		if (edsAFMode != 3){	//it is not in maual AFMode
+			cout << "please set AFMode to manual!" << endl;
+			return -1;
+		}
+	}
+	//set thr Aperture value
+	EdsGetPropertyDesc(canonCamera, kEdsPropID_Av, &propertyModifiable);
+	error = EdsSetPropertyData(canonCamera, kEdsPropID_Av, 0, sizeof(edsApertureValue), &edsApertureValue);
+	if (error == !EDS_ERR_OK){
+		cout << "set Aperture value at " << edsApertureValue << "failed" << endl;
+		return -1;
+	}
+	//set the Shutter speed
+	EdsGetPropertyDesc(canonCamera, kEdsPropID_Tv, &propertyModifiable);
+	error = EdsSetPropertyData(canonCamera, kEdsPropID_Tv, 0, sizeof(edsShutterValue), &edsShutterValue);
+	if (error == !EDS_ERR_OK){
+		cout << "set Shutter speed at " << edsShutterValue << "failed" << endl;
+		return -1;
+	}
+	//set the Exposure compensation
+	EdsGetPropertyDesc(canonCamera, kEdsPropID_ExposureCompensation, &propertyModifiable);
+	error = EdsSetPropertyData(canonCamera, kEdsPropID_ExposureCompensation, 0, sizeof(edsExposureCompensation), &edsExposureCompensation);
+	if (error == !EDS_ERR_OK){
+		cout << "set Exposure compensation at " << edsExposureCompensation << "failed" << endl;
+		return -1;
+	}
+	//set the Flash Compensation
+	EdsGetPropertyDesc(canonCamera, kEdsPropID_FlashCompensation, &propertyModifiable);
+	error = EdsSetPropertyData(canonCamera, kEdsPropID_FlashCompensation, 0, sizeof(edsFlashCompensation), &edsFlashCompensation);
+	if (error == !EDS_ERR_OK){
+		cout << "set FlashCompensation at " << edsFlashCompensation << "failed" << endl;
+		return -1;
+	}
+	//set the Image quality
+	EdsGetPropertyDesc(canonCamera, kEdsPropID_ImageQuality, &propertyModifiable);
+	error = EdsSetPropertyData(canonCamera, kEdsPropID_ImageQuality, 0, sizeof(edsImageQuality), &edsImageQuality);
+	if (error == !EDS_ERR_OK){
+		cout << "set Image quality at " << edsImageQuality << "failed" << endl;
+		return -1;
+	}
+	//set the White balance
+	EdsGetPropertyDesc(canonCamera, kEdsPropID_WhiteBalance, &propertyModifiable);
+	error = EdsSetPropertyData(canonCamera, kEdsPropID_WhiteBalance, 0, sizeof(edsWhiteBalance), &edsWhiteBalance);
+	if (error == !EDS_ERR_OK){
+		cout << "set White balance at " << edsWhiteBalance << "failed" << endl;
+		return -1;
+	}
+
+	return 0;
+
 #endif
-	
+
 }
 
 int GetImage(Mat &frame_grab)
@@ -264,6 +417,9 @@ int GetImage(Mat &frame_grab)
 	is_FreezeVideo(hCam, IS_WAIT);
 	frame_grab.data = (unsigned char *)imageAddress;	//pay attenion to this,there is no new allocated data
 	return 0;
+
+#elif defined(USE_CANON_400D)
+	return 0 ;
 #endif
 
 }
@@ -275,6 +431,11 @@ void CameraClear(void)
 
 #elif defined(USE_UI_2220SE)	//use UI-2220SE camera sdk api function
 	is_ExitCamera (hCam);
+
+#elif defined(USE_CANON_400D)
+	EdsCloseSession(canonCamera);
+	EdsTerminateSDK();
+
 #endif
 }
 

@@ -27,7 +27,7 @@ int main()
 	//namedWindow("projector window", 0);
 	//moveWindow("projector window", 1920, 0);
 	//setWindowProperty("projector window", WND_PROP_FULLSCREEN, 1);
-	ProjectorInitialize(slparameter);
+//	ProjectorInitialize(slparameter);
 
 
 //	//Initialize camera
