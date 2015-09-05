@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "structuredlight", "structuredLight\structuredLight.vcxproj", "{66271DB1-EAE0-4330-B333-EC828182A297}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "linshi", "linshi\linshi.vcxproj", "{9A2C8E48-36E7-4155-8CCE-678214B9C0C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -15,6 +17,10 @@ Global
 		{66271DB1-EAE0-4330-B333-EC828182A297}.Debug|Win32.Build.0 = Debug|Win32
 		{66271DB1-EAE0-4330-B333-EC828182A297}.Release|Win32.ActiveCfg = Release|Win32
 		{66271DB1-EAE0-4330-B333-EC828182A297}.Release|Win32.Build.0 = Release|Win32
+		{9A2C8E48-36E7-4155-8CCE-678214B9C0C7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9A2C8E48-36E7-4155-8CCE-678214B9C0C7}.Debug|Win32.Build.0 = Debug|Win32
+		{9A2C8E48-36E7-4155-8CCE-678214B9C0C7}.Release|Win32.ActiveCfg = Release|Win32
+		{9A2C8E48-36E7-4155-8CCE-678214B9C0C7}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

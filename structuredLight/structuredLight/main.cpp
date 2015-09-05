@@ -1,4 +1,5 @@
 #include <iostream>
+#include <windows.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <string>
@@ -29,33 +30,16 @@ int main()
 	//setWindowProperty("projector window", WND_PROP_FULLSCREEN, 1);
 //	ProjectorInitialize(slparameter);
 
-
 //	//Initialize camera
 	CameraInitialize(slparameter);
 	Mat tmp(slparameter.camera_height, slparameter.camera_width, CV_8UC3, Scalar(0));
-	vector<Mat> imageCaptured(22);
-	for (int i = 0; i < 22; ++i)
-		imageCaptured[i]=Mat(slparameter.camera_height, slparameter.camera_width, CV_8UC3, Scalar(0));
+	Sleep(100);
 	while (1){
-		if(LCR_PatternDisplay(2)>=0)			//Start Pattern Display Sequence
-			for (unsigned int i = 6000000; i > 0; i--);	//there must be an delay >10ms
-
-		unsigned int step = tmp.cols*tmp.rows;
-		for (int i = 0; i < 22; ++i){
-			clock_begin = clock();
-			GetImage(tmp);
-			unsigned char *ptr_src = tmp.ptr <unsigned char>(0);
-			unsigned char *ptr_dst = imageCaptured[i].ptr<unsigned char>(0);
-			for (int i = 0; i < 3 * step; ++i)
-				ptr_dst[i] = ptr_src[i];
-			cout << clock() - clock_begin << " :" <<i<< endl;
-		}
-		clock_begin = clock();
-//		if(LCR_PatternDisplay(0)>=0)			//Stop Pattern Display Sequence
-//			for (unsigned int i = 80000000; i > 0; i--);	//there must be an delay >10ms
-		cout << clock() - clock_begin << endl;
+		GetImage(tmp);
+		Sleep(5000);
 	}
-
+	CameraClear();
+	while (1);
 //	//Run camera calibration
 ////	RunCameraCalibration(slparameter,slcalibration);
 //
